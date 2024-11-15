@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Auth',
     'Property'
 ]
 
@@ -59,6 +60,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'Auth.CustomUser'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
