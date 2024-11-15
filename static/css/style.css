@@ -1,0 +1,16 @@
+/*Generic Styling*/
+
+/*Auth Styling*/
+/*Login Page */
+#loginFormWrap {
+    width: 70%;
+    margin: 3em auto 0 auto;
+    padding: .2em;
+}
+
+#loginFormWrap .formIcon {
+    font-size: 4em;
+    padding: 1em;
+    text-align: center;
+}
+
