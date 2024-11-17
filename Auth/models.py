@@ -37,11 +37,11 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     username = None
-    company = models.ForeignKey('Company', on_delete = models.SET_NULL, null = True)
+    company = models.ForeignKey('Company', on_delete = models.SET_NULL, null = True, blank=True)
     user_type = models.ForeignKey('UserType', on_delete = models.SET_NULL, null = True)
     is_verified = models.BooleanField() 
     # This wil lbe used to store user entered company values prior to creating them in the Company table
-    non_verified_company = models.CharField(max_length = 400)
+    non_verified_company = models.CharField(max_length = 400, null = True, blank=True)
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

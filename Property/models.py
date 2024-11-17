@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 class Stage(models.Model):
     stage = models.CharField(max_length = 100)
@@ -67,6 +68,19 @@ class Opportunity(models.Model):
     purchaser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='purchaser')
     solicitor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='solicitor')
     in_listed_stage_since = models.DateTimeField(auto_now_add=True, null = True)
+    last_modified_date = models.DateTimeField(auto_now_add=True, null = True)
+
+    def get_days_in_stage_amount(self):
+        delta = timezone.now() - self.in_listed_stage_since
+        return delta.days
+    
+    def get_last_modified_date(self):
+        return self.last_modified_date.strftime('%d/%m/%Y')
+    
+    def __str__(self):
+        return self.property.name
+
+
      
 
 

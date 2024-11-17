@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block page_title %}Listed Properties{% endblock %}
+{% block content %}
+<div class="multiOppWrap">
+    <!--Filters-->
+    <div class="filters">
+        <div class="row">
+            <!--Bed Filter-->
+            <div class="col-sm-12 col-md-4">
+                <label for="bedFilterSelect">Bedrooms:</label>
+                <select class="form-control" id='bedFilterSelect'>
+				    <option value = 'allBeds'>All</option>
+					<option value="1Bed">1 Bed</option>
+					<option value="2Bed">2 Bed</option>
+					<option value="3Bed">3 Bed</option>
+				</select>
+            </div>
+            <!--Stage Filter-->
+            <div class="col-sm-12 col-md-4">
+                <label for="stageFilterSelect">Stage:</label>
+				<select class="form-control" id='stageFilterSelect'>
+					<option value = 'allStages'>All</option>
+					<option value="ForSale">For Sale</option>
+					<option value="SaleAgreed">Sale Agreed</option>
+					<option value="ContractsExchanged">Contracts Exchanged</option>
+					<option value="Sold">Sold</option>
+				</select>
+            </div>
+            <!--Days in Stage Filter-->
+            <div class="col-sm-12 col-md-4">
+                <label for="timeFilterSelect">Days in Stage</label>
+				<select class="form-control" id='timeFilterSelect'>
+					<option value = 'allTimes'>All</option>
+					<option value="idleTimeStageOne">0-13 Days</option>
+					<option value="idleTimeStageTwo">14-21 Days</option>
+					<option value="idleTimeStageThree">21+ Days</option>
+				</select>
+            </div>
+        </div>
+    </div>
+    <!--Listings-->
+    <div class="oppList">
+        <!--Listing Header-->
+        <div class="oppListHeader">
+            <div class="row">
+                <div class="col-md-3">
+                    <h3>Property</h3>
+                </div>
+                <div class="col-md-1">
+                    <h3>Beds</h3>
+                </div>
+                <div class="col-md-3">
+                    <h3>Stage</h3>
+                </div>
+                <div class="col-md-2">
+                    <h3>Days in Stage</h3>
+               </div>
+               <div class="col-md-3">
+                    <h3>Last Update</h3>
+                </div>
+            </div>
+        </div>
+        <!--List Items-->
+        {% for opp in opportunities %}
+        <div class="oppListItem">
+            <div class="row">
+                <div class="col-md-3">
+                    <p>{{opp.property}}</p>
+                </div>
+                <div class="col-md-1">
+                    <p>{{opp.property.bedroom_amount}}</p>
+                </div>
+                <div class="col-md-3">
+                    <p>{{opp.stage}}</p>
+                </div>
+                <div class="col-md-2">
+                    <p>{{opp.get_days_in_stage_amount}}</p>
+                </div>
+                <div class="col-md-3">
+                    <p>{{opp.get_last_modified_date}}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <h1>Nothing Here Yet</h1>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
