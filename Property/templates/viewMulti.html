@@ -76,8 +76,13 @@
                 <div class="col-md-2">
                     <p>{{opp.get_days_in_stage_amount}}</p>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-1">
                     <p>{{opp.get_last_modified_date}}</p>
+                </div>
+                <div class="col-md-1">
+                    <a href="{% url 'property:view_opportunity' opp.id %}">
+                        <i class="fas fa-eye" aria-hidden="true"></i> 
+                    </a>
                 </div>
             </div>
         </div>

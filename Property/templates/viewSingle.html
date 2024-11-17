@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block page_title %}Listed Properties{% endblock %}
+{% block content %}
+<div class="oppWrap">
+    <a href="{% url 'property:view_opportunities' %}"><i class="fa fa-arrow-left" aria-hidden="true"></i></a>
+    {{opportunity.property}}
+</div>
+{% endblock %}
