@@ -43,6 +43,10 @@ class Property(models.Model):
         # Remove last ',' character and space in the return
         return address[:-2]
     
+    # Function outputs class used in css for JS bed filter to determine visibility
+    def get_formatted_bedroom_amount(self):
+        return f'{self.bedroom_amount}Bed'
+
     def __str__(self):
         return self.name
     
@@ -67,7 +71,7 @@ class Opportunity(models.Model):
     property = models.ForeignKey("Property", on_delete = models.SET_NULL, null=True)
     purchaser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='purchaser')
     solicitor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='solicitor')
-    in_listed_stage_since = models.DateTimeField(auto_now_add=True, null = True)
+    in_listed_stage_since = models.DateTimeField(null = False)
     last_modified_date = models.DateTimeField(auto_now_add=True, null = True)
 
     def get_days_in_stage_amount(self):
@@ -76,6 +80,16 @@ class Opportunity(models.Model):
     
     def get_last_modified_date(self):
         return self.last_modified_date.strftime('%d/%m/%Y')
+    
+    # This method is used to determine what class to give the opportunity item in the viewMulti HTML page
+    def getIdleStageTimeRange(self):
+        idleDays = self.get_days_in_stage_amount()
+        if idleDays <= 13:
+            return 'idleTimeStageOne'
+        elif idleDays <= 21:
+            return 'idleTimeStageTwo'
+        else:
+            return 'idleTimeStageThree'
     
     def __str__(self):
         return self.property.name

@@ -62,7 +62,7 @@
         </div>
         <!--List Items-->
         {% for opp in opportunities %}
-        <div class="oppListItem">
+        <div class="oppListItem {{opp.property.get_formatted_bedroom_amount}} {{opp.stage|cut:' '}} {{opp.getIdleStageTimeRange}}">
             <div class="row">
                 <div class="col-md-3">
                     <p>{{opp.property}}</p>
@@ -91,4 +91,7 @@
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+{% block pageScript %}
+<script src="../../static/js/opportunity.js"></script>
 {% endblock %}
