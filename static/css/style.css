@@ -4,18 +4,93 @@
 /*Login Page */
 #authFormWrap {
     width: 70%;
-    margin: 3em auto 0 auto;
-    padding: .2em;
+    margin: 3rem auto 0 auto;
+    padding: .2rem;
 }
 
 #authFormWrap .formIcon {
-    font-size: 4em;
-    padding: 1em;
+    font-size: 4rem;
+    padding: 1rem;
     text-align: center;
 }
 
 .authFormError {
     color: red;
     display: block;
+}
+
+
+/* Multi Opportunity Page*/
+.multiOppWrap {
+    width: 80%;
+    padding: 1rem;
+    margin: auto;
+}
+
+.multiOppWrap .filters {
+    width: 50%;
+    padding: 1em 0;
+}
+
+.multiOppWrap .oppList {
+    padding: .5em;
+}
+
+.multiOppWrap .oppListHeader {
+    background-color: #F4F5F6;
+    color:#65696e;
+    font-weight: 500;
+    padding: .2em;
+}
+
+.multiOppWrap .oppListItem {
+    border-top: .3em solid #F4F5F6;
+    padding: .8em;
+    color: white;
+    transition: ease-in-out;
+}
+
+.multiOppWrap:hover {
+    cursor: pointer;
+}
+
+.multiOppWrap .ForSale {
+    background-color: orange;
+}
+
+.multiOppWrap .ForSale:hover {
+    background-color: white;
+    color: orange;
+    border: .1em solid orange;
+}
+
+.multiOppWrap .Sold {
+    background-color: limegreen;
+}
+
+.multiOppWrap .Sold:hover {
+    background-color: white;
+    color: limegreen;
+    border: .1em solid limegreen;
+}
+
+.multiOppWrap .SaleAgreed {
+    background-color: #A654F0;
+}
+
+.multiOppWrap .SaleAgreed:hover {
+    background-color: white;
+    color: #A654F0;
+    border: .1em solid #A654F0;
+}
+
+.multiOppWrap .ContractsExchanged {
+    background-color: #FF4AA0;
+} 
+
+.multiOppWrap .ContractsExchanged:hover {
+    background-color: white;
+    color: #FF4AA0;
+    border: .1em solid #FF4AA0;
 }
 

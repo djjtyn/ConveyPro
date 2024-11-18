@@ -1,6 +1,7 @@
 //This file contains JS relevant to the webpage which lists all opportunities
 $(document).ready(() => {
     initFilters();
+    initRecordRedirect();
 });
 
 
@@ -163,4 +164,13 @@ function applyStageTimeFilter(filterBy) {
             }
         }
     })
+}
+
+function initRecordRedirect() {
+    $('.oppListItem').each(function(i, element) {
+        $(element).on('click', function(e) {
+            elementRedirectUrl = $(element).find('.redirectUrl').attr('href');
+            window.location.href = `${window.location.origin}${elementRedirectUrl}`;
+        })
+    });
 }
