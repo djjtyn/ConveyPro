@@ -94,3 +94,92 @@
     border: .1em solid #FF4AA0;
 }
 
+/* Single Opportunity Page*/
+.oppWrap {
+    width: 96%;
+    margin: auto;
+}
+
+.oppWrap .backIcon i {
+    font-size: 1.5em;
+    padding: 1em 0;
+}
+
+.oppWrap .propertyName {
+    font-size: 2em;
+}
+
+.oppWrap .stageBtn {
+    height: 3em;
+    width: 100%;
+    border: .1em solid black;
+    border-radius: 8%;
+}
+
+.oppWrap .ForSaleBtn {
+    transition: ease-in-out;
+    background-color: orange;
+    color: white;
+}
+
+.oppWrap .ForSaleBtn:hover,
+.oppWrap .ForSaleBtn:focus {
+    background-color: white;
+    color: black;
+    cursor: pointer;
+}
+
+.oppWrap .SaleAgreedBtn {
+    transition: ease-in-out;
+    background-color: #A654F0;
+    color: white;
+}
+
+.oppWrap .SaleAgreedBtn:hover,
+.oppWrap .SaleAgreedBtn:focus {
+    background-color: white;
+    color: #A654F0;;
+    cursor: pointer;
+}
+
+.oppWrap .ContractsExchangedBtn {
+    transition: ease-in-out;
+    background-color: #FF4AA0;
+    color: white;
+}
+
+.oppWrap .ContractsExchangedBtn:hover,
+.oppWrap .ContractsExchangedBtn:focus {
+    background-color: white;
+    color: #FF4AA0;
+    cursor: pointer;
+}
+
+.oppWrap .SoldBtn {
+    transition: ease-in-out;
+    background-color: limegreen;
+    color: white;
+}
+
+.oppWrap .SoldBtn:hover,
+.oppWrap .SoldBtn:focus {
+    background-color: white;
+    color: limegreen;
+    cursor: pointer;
+}
+
+.oppWrap .saveStageWrap {
+    text-align: center;
+    padding: 1em;
+}
+.oppWrap .noteDocBtnWrap {
+    display: contents;
+    border: .1em solid black;
+    border-radius: 8%;
+}
+
+.oppWrap .noteDocBtnWrap button {
+    height: 3em;
+    width: 100%;
+    background-color: white;
+}
