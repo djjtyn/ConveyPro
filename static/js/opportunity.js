@@ -60,11 +60,20 @@ function updateStage() {
                 'X-CSRFToken': csrfToken,
             },
             success: function(res) {
-                console.log('Updated');
+                displayUpdateStatus('success', res['message']);
             },
             error: function (e) {
-              console.log(`Error at updateStage(): ${e} `);
+                displayUpdateStatus('error', res['message']);
             },
         });
     } 
 }
+
+function displayUpdateStatus(status, msg) {
+    $('#pageMessages').text(msg);
+    if(status == 'error') {
+        $('#pageMessages').css('background-color', 'red');
+    }
+    $('#pageMessages').fadeIn(500).fadeOut(3000);
+}
+

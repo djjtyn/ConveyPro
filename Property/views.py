@@ -21,8 +21,7 @@ def view_opportunity(request, id):
             request_data = json.loads(request.body)
             action = request_data.get('action')
             if action == 'stageUpdate':
-                update_stage(opportunity, request_data.get('stage'))
-
-            
+                # Return will pass update status to client device
+                return update_stage(opportunity, request_data.get('stage'))
     except Exception as e:
         print('Error at view_opportunities: {e}')
