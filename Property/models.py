@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -73,6 +74,18 @@ class Opportunity(models.Model):
     solicitor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='solicitor')
     in_listed_stage_since = models.DateTimeField(null = False)
     last_modified_date = models.DateTimeField(auto_now_add=True, null = True)
+    contracts_issued_to_purchaser = models.DateTimeField(null = True, blank = True)
+    hardcopy_docs_requested = models.BooleanField(null=True, blank = True)
+    precontract_queries_received_date = models.CharField(max_length = 50, null = True, blank = True)
+    precontract_queries_response_date = models.CharField(max_length = 50, null = True, blank = True)
+    chaser_email_one_send_date = models.CharField(max_length = 50, null = True, blank = True)
+    rejoinders_received_date = models.CharField(max_length = 50, null = True, blank = True)
+    rejoinders_response_date = models.CharField(max_length = 50, null = True, blank = True)
+    chaser_email_two_send_date = models.CharField(max_length = 50, null = True, blank = True)
+    further_rejoinders_received_date = models.CharField(max_length = 50, null = True, blank = True)
+    further_rejoinders_response_date = models.CharField(max_length = 50, null = True, blank = True)
+    contracts_received_date = models.DateTimeField(null = True, blank = True)
+    deposit_received_date = models.DateTimeField(null = True, blank = True)
 
     def get_days_in_stage_amount(self):
         delta = timezone.now() - self.in_listed_stage_since
@@ -80,7 +93,10 @@ class Opportunity(models.Model):
     
     def get_last_modified_date(self):
         return self.last_modified_date.strftime('%d/%m/%Y')
-    
+
+    def format_contract_issue_date(self):
+        return self.contracts_issued_to_purchaser.strftime('%Y-%m-%d')
+
     # This method is used to determine what class to give the opportunity item in the viewMulti HTML page
     def getIdleStageTimeRange(self):
         idleDays = self.get_days_in_stage_amount()
@@ -90,6 +106,11 @@ class Opportunity(models.Model):
             return 'idleTimeStageTwo'
         else:
             return 'idleTimeStageThree'
+        
+    def are_hardcopy_docs_requested(self):
+        if self.hardcopy_docs_requested:
+            return True
+        return False
     
     def __str__(self):
         return self.property.name

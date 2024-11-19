@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from .functions import update_stage
+from .functions import update_stage, update_sub_stage
 from .models import Property, Opportunity
 from django.shortcuts import render, get_object_or_404
 
@@ -23,5 +23,7 @@ def view_opportunity(request, id):
             if action == 'stageUpdate':
                 # Return will pass update status to client device
                 return update_stage(opportunity, request_data.get('stage'))
+            if action == 'subStageUpdate':
+                return update_sub_stage(opportunity, request_data.get('subStageName'), request_data.get('value'), request_data.get('inputId'))
     except Exception as e:
         print('Error at view_opportunities: {e}')

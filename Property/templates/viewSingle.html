@@ -1,8 +1,335 @@
 {% extends 'base.html' %}
+{% load tags %}
 {% block page_title %}Listed Properties{% endblock %}
 {% block content %}
 <div class="oppWrap">
-    <a href="{% url 'property:view_opportunities' %}"><i class="fa fa-arrow-left" aria-hidden="true"></i></a>
-    {{opportunity.property}}
+    <a href="{% url 'property:view_opportunities' %}" class = 'backIcon'><i class="fa fa-arrow-left" aria-hidden="true"></i></a>
+    <div class="row">
+        <div class="col-sm-12">
+            <span class = 'propertyName'>{{opportunity.property}}</span><span class = 'bedRoomAmount'> &#x2022 {{opportunity.property.bedroom_amount}} Bedroom</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <p>{{opportunity.property.get_formatted_address}}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-6">
+            <button id = 'stageBtn' class = "stageBtn {{opportunity.stage|cut:' '}}Btn">{{opportunity.stage}}</button>
+            <!--Sub Stages-->
+            <div class="subStageWrap">
+                <!--Sale Agreed-->
+                <div id="saleAgreedSubStageWrap" {% if opportunity.stage.stage != 'Sale Agreed' %}hidden{% endif %}>
+                    <span class="subStageCount"></span>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Contracts Issued To Purchaser">Contracts Issued to Purchaser</label>
+                                    <input type="date" id = 'Contracts Issued To Purchaser' name = 'contracts_issued_to_purchaser' {% if opportunity.contracts_issued_to_purchaser %}value = '{{opportunity.contracts_issued_to_purchaser|format_date}}' {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11"> 
+                                <div class="substageField">
+                                    <label for="Hard CopyDocumentation Requested">Hard Copy Documentation Requested</label>
+                                    <select id = 'Hard CopyDocumentation Requested' name = 'hardcopy_docs_requested'>
+                                        <option disabled>Select a Value</option>
+                                        <option value="Yes" {%if opportunity.are_hardcopy_docs_requested %}selected{% endif %}>Yes</option>
+                                        <option value="No" {%if not opportunity.are_hardcopy_docs_requested %}selected{% endif %}>No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Pre Contract Queries Received">Pre-contract Queries Received</label>
+                                    {% if opportunity.precontract_queries_received_date|is_date_format %}
+                                        <input type="date" id="Pre Contract Queries Received" name = 'precontract_queries_received_date' value = '{{opportunity.precontract_queries_received_date}}'>
+                                    {% else %}
+                                        <select id="Pre Contract Queries Received" name = 'precontract_queries_received_date'>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {%if opportunity.precontract_queries_received_date == 'NA'%}selected{%endif%}>N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Pre Contract Queries Response">Response to Pre-contract Queries</label>
+                                    {% if opportunity.precontract_queries_response_date|is_date_format %}
+                                        <input type="date" id="Pre Contract Queries Response" name = 'precontract_queries_response_date' value = '{{opportunity.precontract_queries_response_date}}'>
+                                    {% else %}
+                                        <select id="Pre Contract Queries Response" name = 'precontract_queries_response_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Chaser Email One Send Date">First Chaser Email Sent</label>
+                                    {% if opportunity.chaser_email_one_send_date|is_date_format %}
+                                        <input type="date" id="Chaser Email One Send Date" name = 'chaser_email_one_send_date' value = '{{opportunity.chaser_email_one_send_date}}'>
+                                    {% else %}
+                                        <select id="Chaser Email One Send Date" name = 'chaser_email_one_send_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Rejoinders Received Date">Rejoinders Received</label>
+                                    {% if opportunity.rejoinders_received_date|is_date_format %}
+                                        <input type="date" id="Rejoinders Received Date" name = 'rejoinders_received_date' value = '{{opportunity.rejoinders_received_date}}'>
+                                    {% else %}
+                                        <select id="Rejoinders Received Date" name = 'rejoinders_received_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Rejoinders Response Date">Response to Rejoinders</label>
+                                    {% if opportunity.rejoinders_response_date|is_date_format %}
+                                        <input type="date" id="Rejoinders Response Date" name = 'rejoinders_response_date' value = '{{opportunity.rejoinders_response_date}}'>
+                                    {% else %}
+                                        <select id="Rejoinders Response Date" name = 'rejoinders_response_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Chaser Email Two Send Date">Second Chaser Email Sent</label>
+                                    {% if opportunity.chaser_email_two_send_date|is_date_format %}
+                                        <input type="date" id="Chaser Email Two Send Date" name = 'chaser_email_two_send_date' value = '{{opportunity.chaser_email_two_send_date}}'>
+                                    {% else %}
+                                        <select id="Chaser Email Two Send Date" name = 'chaser_email_two_send_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Further Rejoinders Received Date">Further Rejoinders Received</label>
+                                    {% if opportunity.further_rejoinders_received_date|is_date_format %}
+                                        <input type="date" id="Further Rejoinders Received Date" name = 'further_rejoinders_received_date' value = '{{opportunity.further_rejoinders_received_date}}'>
+                                    {% else %}
+                                        <select id="Further Rejoinders Received Date" name = 'further_rejoinders_received_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Further Rejoinders Response Date">Response to Further Rejoinders</label>
+                                    {% if opportunity.further_rejoinders_response_date|is_date_format %}
+                                        <input type="date" id="Further Rejoinders Response Dat" name = 'further_rejoinders_response_date' value = '{{opportunity.further_rejoinders_response_date}}'>
+                                    {% else %}
+                                        <select id="Further Rejoinders Response Date" name = 'further_rejoinders_response_date'>
+                                            <option disabled>Select a Value</option>
+                                            <option value="NA">N/A</option>
+                                            <option value="date">Select a Date</option>
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">                        
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Contracts Received Date">Contracts Received</label>
+                                    <input type="date" id = 'Contracts Received Date' name = 'contracts_received_date' {% if opportunity.contracts_received_date%} value = '{{opportunity.contracts_received_date|format_date}}'{% endif %} >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Deposit Received Date">Deposit Received</label>
+                                    <input type="date" id = 'Deposit Received Date' name = 'deposit_received_date' {% if opportunity.deposit_received_date%} value = '{{opportunity.deposit_received_date|format_date}}'{% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Contracts Exchanged-->
+                <div id="contractsExchangedSubStageWrap" {% if opportunity.stage.stage != 'Contracts Exchanged' %}hidden{% endif %}>
+                    <p>Contracts Exchanged</p>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6">
+            <div class="row">
+                <div class="noteDocBtnWrap">
+                    <div class="col-sm-6">
+                        <button><i class="fa-regular fa-note-sticky"></i>Notes</button>
+                    </div>
+                    <div class="col-sm-6">
+                        <button><i class="fa-regular fa-file"></i>Documents</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stage Modal -->
+    <div class="modal fade" id="stageModal" tabindex="-1" aria-labelledby="stageModal" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stageModalLabel">Change Stage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id = 'stageUpdateForm' method = 'POST'>
+                        {% csrf_token %}
+                        <input type="hidden" id = 'selectedStage'>
+                    </form>
+                    <div id="selectStageContainer" class="select-stage-container">
+                        <div class="row">
+                            <div class="col-sm-12 col-md-3">
+                                <button value = 'ForSaleBtn' class = 'ForSaleBtn stageBtn'>For Sale</button>
+                            </div>
+                            <div class="col-sm-12 col-md-3">
+                                <button value = 'SaleAgreedBtn' class = 'SaleAgreedBtn stageBtn'>Sale Agreed</button>
+                            </div>
+                            <div class="col-sm-12 col-md-3">
+                                <button value = 'ContractsExchangedBtn' class = 'ContractsExchangedBtn stageBtn'>Contracts Exchanged</button>
+                            </div>
+                            <div class="col-sm-12 col-md-3">
+                                <button value = 'SoldBtn' class = 'SoldBtn stageBtn'>Sold</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="saveStageWrap">
+                        <button id="saveStageBtn" class = "{{opportunity.stage|cut:' '}}Btn">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+{% block pageScript %}
+<script src="../../static/js/opportunity.js"></script>
 {% endblock %}

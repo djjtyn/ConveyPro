@@ -2,6 +2,7 @@
 $(document).ready(() => {
     initStageModalListener();
     initStageModalListeners();
+    initSubStageListeners();
 });
 
 
@@ -38,7 +39,6 @@ function updateStage() {
     const selectedStage = $('#selectedStage').val();
     // Only update the stage if it differs from the one the page loaded with
     if($('#stageBtn').text() != selectedStage) {
-        //Update db if selected stage differs 
         const targetURL = window.location.href;
         $('#stageBtn').removeClass();
         $('#stageBtn').addClass('stageBtn');
@@ -76,4 +76,121 @@ function displayUpdateStatus(status, msg) {
     }
     $('#pageMessages').fadeIn(500).fadeOut(3000);
 }
+
+function initSubStageListeners() {
+    //Get all substage input and select elements
+    $('#saleAgreedSubStageWrap input, #saleAgreedSubStageWrap select, #contractsExchangedSubStageWrap input, #contractsExchangedSubStageWrap select').each(function(i, element) {
+        const elementType = $(element).is('input') ? 'input': 'select';
+        $(element).on('change', function(e) {
+            processSubStageUpdate(this, elementType);
+        })
+    })
+}
+
+function processSubStageUpdate(element, elementType) {
+    const selectedVal = element.value;
+    const inputName = element.name;
+    const parentElement = element.parentNode;
+    //Determine if input type needs to change from select element to date element
+    if (elementType == 'select') {
+        //Display a date input instead of a select element and append it to the select elements parent
+        if(selectedVal == 'date') {
+            const dateInput = createDateInputElement(parentElement,element,element.id, inputName);   //Create a date input with an id value matching the select element and the ability to revert to original element
+            //Remove the select element from the DOM to avoid duplicate element ID
+            element.remove();
+            parentElement.appendChild(dateInput);
+        } else {
+            updateSubStage(inputName,selectedVal, element.id)
+        }
+    } else {
+        // SomeDate inputs may have potential to be set as NA
+        if(onlyDateInputApplicable(inputName)) {
+            updateSubStage(inputName,selectedVal, element.id);
+        } else {
+            //Handle inputs which can be changed back to NA
+            if(!selectedVal) {
+                //Display the N/A select options again
+                selectEl = createSelectInputElement(parentElement, element, element.id, inputName);
+                //Remove the input element from the DOM to avoid duplicate element ID
+                element.remove();
+                parentElement.appendChild(selectEl);
+            } else {
+                updateSubStage(inputName,selectedVal, element.id);
+            }
+        }
+    }
+}
+
+function createDateInputElement(parentElement, element, elId, inputName) {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'date');
+    input.setAttribute('id', elId);
+    input.setAttribute('name', inputName);
+    //Event handler to revert to select input
+    input.addEventListener('input', function() {
+        //If clear button has been selected revert back to the original select element
+        if (!this.value) {
+            input.remove();
+            parentElement.appendChild(element);
+        } else {
+            // Update Db with selected value
+            updateSubStage(element.name,this.value, elId);
+        }
+    })
+    return input;
+}
+
+function createSelectInputElement(parentElement, element, elId, inputName) {
+    const select = document.createElement('select');
+    select.setAttribute('type', 'date');
+    select.setAttribute('id', elId);
+    select.setAttribute('name', inputName);
+    select.innerHTML = 
+    `
+        <option disabled selected>Select a Value</option>
+        <option value="NA">N/A</option>
+        <option value="date">Select a Date</option>
+    `;
+    select.addEventListener('change', (e) => {
+        processSubStageUpdate(select, 'select');
+    })
+    return select;
+}
+
+function updateSubStage(inputName, val, id) {
+    console.log('Request made')
+    const targetURL = window.location.href;
+    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    let reqObj = {
+        'action': 'subStageUpdate',
+        'subStageName': inputName,
+        'value': val,
+        'inputId': id
+    }
+    $.ajax({
+        type: 'POST',
+        url: targetURL,
+        data: JSON.stringify(reqObj),
+        processData: false,
+        contentType: false,
+        cache: false,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        },
+        success: function(res) {
+            displayUpdateStatus('success', res['message']);
+        },
+        error: function (e) {
+            displayUpdateStatus('error', res['message']);
+        },
+    });
+}
+
+function onlyDateInputApplicable(inputName) {
+    if (inputName == 'contracts_issued_to_purchaser' || inputName == 'contracts_received_date' || inputName == 'deposit_received_date' ) {
+        return true;
+    }
+    return false;
+}
+
 
