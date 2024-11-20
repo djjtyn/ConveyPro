@@ -115,7 +115,8 @@ function processSubStageUpdate(element, elementType) {
             element.remove();
             parentElement.appendChild(dateInput);
         } else {
-            updateSubStage(inputName,selectedVal, element.id)
+            updateCompletionCount(inputName, 'increment', element.id);
+            updateSubStage(inputName,selectedVal, element.id);
         }
     } else {
         // SomeDate inputs may have potential to be set as NA
@@ -125,12 +126,11 @@ function processSubStageUpdate(element, elementType) {
             //Handle inputs which can be changed back to NA
             if(!selectedVal) {
                 //Display the N/A select options again
+                updateCompletionCount(inputName, 'decrement', element.id)
                 selectEl = createSelectInputElement(parentElement, element, element.id, inputName);
                 //Remove the input element from the DOM to avoid duplicate element ID
                 element.remove();
                 parentElement.appendChild(selectEl);
-                //Remove any checks that previosuly existed for the input
-                renderCheckIcon(selectEl.id, 'uncheck');
             } else {
                 updateSubStage(inputName,selectedVal, element.id);
             }
@@ -147,12 +147,13 @@ function createDateInputElement(parentElement, element, elId, inputName) {
     input.addEventListener('input', function() {
         //If clear button has been selected revert back to the original select element
         if (!this.value) {
+            //Remove any checks that previosuly existed for the input
+            updateCompletionCount(inputName, 'decrement', elId);
             selectEl = createSelectInputElement(parentElement, element, elId, inputName)
             input.remove();
             parentElement.appendChild(selectEl);
-            //Remove any checks that previosuly existed for the input
-            renderCheckIcon(element.id, 'uncheck');
         } else {
+            updateCompletionCount(inputName, 'increment', elId);
             // Update Db with selected value
             updateSubStage(element.name,this.value, elId);
         }
@@ -197,7 +198,7 @@ function updateSubStage(inputName, val, id) {
             'X-CSRFToken': csrfToken,
         },
         success: function(res) {
-            renderCheckIcon(id, 'check');
+            updateCompletionCount(inputName, res['renderCount'], id);
             displayUpdateStatus('success', res['message']);
         },
         error: function (e) {
@@ -213,11 +214,40 @@ function renderCheckIcon(id, action) {
     iconWrap.innerHTML = innerHtml;
 }
 
-function onlyDateInputApplicable(inputName) {
-    if (inputName == 'contracts_issued_to_purchaser' || inputName == 'contracts_received_date' || inputName == 'deposit_received_date' ) {
-        return true;
+function updateCompletionCount(inputName, opType, id) {
+    // Update the stage completion count if the db value has been added or removed
+    if (opType == 'increment' || opType == 'decrement') {
+        const substageWrapId = getRelatedSubStageWrapId(inputName)
+        const completionCountEl = $(`#${substageWrapId} .completetionCount`);
+        let currentCompletionCount = Number(completionCountEl.text());
+        opType == 'increment' ? currentCompletionCount++ : currentCompletionCount--;
+        completionCountEl.text(currentCompletionCount);
+        opType == 'increment' ? renderCheckIcon(id, 'check') : renderCheckIcon(id, 'remove')
+    } 
+    if(opType == 'static') {
+        renderCheckIcon(id, 'check');
+    } 
+}
+
+function getRelatedSubStageWrapId(inputName) {
+    if (inputName == 'title_deed_send_date' || inputName == 'closing_requirements_received_date' || inputName == 'closing_requirements_returned_date') {
+        return 'contractsExchangedSubStageWrap'
     }
-    return false;
+    return 'saleAgreedSubStageWrap'
+}
+
+function onlyDateInputApplicable(inputName) {
+    switch (inputName) {
+        case 'contracts_issued_to_purchaser':
+        case 'contracts_received_date':
+        case 'deposit_received_date':
+        case 'closing_requirements_received_date':
+        case 'closing_requirements_returned_date':
+        case 'title_deed_send_date':
+            return true;       
+        default:
+            return false;
+    }
 }
 
 

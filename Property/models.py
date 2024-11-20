@@ -86,6 +86,9 @@ class Opportunity(models.Model):
     further_rejoinders_response_date = models.CharField(max_length = 50, null = True, blank = True)
     contracts_received_date = models.DateTimeField(null = True, blank = True)
     deposit_received_date = models.DateTimeField(null = True, blank = True)
+    closing_requirements_received_date = models.DateTimeField(null = True, blank = True)
+    closing_requirements_returned_date = models.DateTimeField(null = True, blank = True)
+    title_deed_send_date = models.DateTimeField(null = True, blank = True)
 
     def get_days_in_stage_amount(self):
         delta = timezone.now() - self.in_listed_stage_since
@@ -93,9 +96,6 @@ class Opportunity(models.Model):
     
     def get_last_modified_date(self):
         return self.last_modified_date.strftime('%d/%m/%Y')
-
-    def format_contract_issue_date(self):
-        return self.contracts_issued_to_purchaser.strftime('%Y-%m-%d')
 
     # This method is used to determine what class to give the opportunity item in the viewMulti HTML page
     def getIdleStageTimeRange(self):
@@ -111,6 +111,31 @@ class Opportunity(models.Model):
         if self.hardcopy_docs_requested:
             return True
         return False
+    
+    #Count how many sub stage attributees within the Sale Agreed stage are populates
+    def get_sale_agreed_substage_complete_count(self):
+        substage_fields = [
+            'contracts_issued_to_purchaser', 'precontract_queries_received_date', 'precontract_queries_response_date',  
+            'chaser_email_one_send_date', 'rejoinders_received_date', 'rejoinders_response_date', 'chaser_email_two_send_date', 'further_rejoinders_received_date',
+             'further_rejoinders_response_date', 'contracts_received_date', 'deposit_received_date'
+        ]
+        # Start at 1 to account for hardcopy_docs_requested boolean field
+        count = 1
+        for stage in substage_fields:
+            val = getattr(self, stage, None)
+            if val:
+                count+=1
+        return count
+    
+        #Count how many sub stage attributees within the Sale Agreed stage are populates
+    def get_contracts_exchanged_substage_complete_count(self):
+        substage_fields = ['closing_requirements_received_date', 'closing_requirements_returned_date', 'title_deed_send_date']
+        count = 0
+        for stage in substage_fields:
+            val = getattr(self, stage, None)
+            if val:
+                count+=1
+        return count
     
     def __str__(self):
         return self.property.name

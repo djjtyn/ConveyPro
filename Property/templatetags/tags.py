@@ -21,3 +21,15 @@ def format_date(value):
 @register.filter
 def is_NA(value):
     return value == 'NA'
+
+@register.filter
+def is_true(value):
+    if value == True:
+        return True
+
+
+@register.filter
+def is_false(value):
+    if value == False:
+        return True
+

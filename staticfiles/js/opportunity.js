@@ -40,10 +40,6 @@ function updateStage() {
     // Only update the stage if it differs from the one the page loaded with
     if($('#stageBtn').text() != selectedStage) {
         const targetURL = window.location.href;
-        $('#stageBtn').removeClass();
-        $('#stageBtn').addClass('stageBtn');
-        $('#stageBtn').addClass(`${selectedStage.split(' ').join('')}Btn`);
-        $('#stageBtn').text(selectedStage);        
         csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
         let reqObj = {
             'action': 'stageUpdate',
@@ -60,6 +56,7 @@ function updateStage() {
                 'X-CSRFToken': csrfToken,
             },
             success: function(res) {
+                renderSelectedStage(selectedStage);
                 displayUpdateStatus('success', res['message']);
             },
             error: function (e) {
@@ -67,6 +64,23 @@ function updateStage() {
             },
         });
     } 
+}
+
+function renderSelectedStage(selectedStage) {
+    $('#stageBtn').removeClass();
+    $('#stageBtn').addClass('stageBtn');
+    $('#stageBtn').addClass(`${selectedStage.split(' ').join('')}Btn`);
+    $('#stageBtn').text(selectedStage);  
+    if(selectedStage == 'Sale Agreed') {
+        $('#contractsExchangedSubStageWrap').attr('hidden', true);
+        $('#saleAgreedSubStageWrap').removeAttr('hidden');
+    } else if(selectedStage == 'Contracts Exchanged')  {
+        $('#saleAgreedSubStageWrap').attr('hidden', true);
+        $('#contractsExchangedSubStageWrap').removeAttr('hidden');
+    } else {
+        $('#contractsExchangedSubStageWrap').attr('hidden', true);
+        $('#saleAgreedSubStageWrap').attr('hidden', true);
+    }
 }
 
 function displayUpdateStatus(status, msg) {
@@ -97,10 +111,12 @@ function processSubStageUpdate(element, elementType) {
         if(selectedVal == 'date') {
             const dateInput = createDateInputElement(parentElement,element,element.id, inputName);   //Create a date input with an id value matching the select element and the ability to revert to original element
             //Remove the select element from the DOM to avoid duplicate element ID
+            renderCheckIcon(element.id, 'uncheck');
             element.remove();
             parentElement.appendChild(dateInput);
         } else {
-            updateSubStage(inputName,selectedVal, element.id)
+            updateCompletionCount(inputName, 'increment', element.id);
+            updateSubStage(inputName,selectedVal, element.id);
         }
     } else {
         // SomeDate inputs may have potential to be set as NA
@@ -110,6 +126,7 @@ function processSubStageUpdate(element, elementType) {
             //Handle inputs which can be changed back to NA
             if(!selectedVal) {
                 //Display the N/A select options again
+                updateCompletionCount(inputName, 'decrement', element.id)
                 selectEl = createSelectInputElement(parentElement, element, element.id, inputName);
                 //Remove the input element from the DOM to avoid duplicate element ID
                 element.remove();
@@ -130,9 +147,13 @@ function createDateInputElement(parentElement, element, elId, inputName) {
     input.addEventListener('input', function() {
         //If clear button has been selected revert back to the original select element
         if (!this.value) {
+            //Remove any checks that previosuly existed for the input
+            updateCompletionCount(inputName, 'decrement', elId);
+            selectEl = createSelectInputElement(parentElement, element, elId, inputName)
             input.remove();
-            parentElement.appendChild(element);
+            parentElement.appendChild(selectEl);
         } else {
+            updateCompletionCount(inputName, 'increment', elId);
             // Update Db with selected value
             updateSubStage(element.name,this.value, elId);
         }
@@ -151,16 +172,15 @@ function createSelectInputElement(parentElement, element, elId, inputName) {
         <option value="NA">N/A</option>
         <option value="date">Select a Date</option>
     `;
-    select.addEventListener('change', (e) => {
+    select.addEventListener('change', function(e) {
         processSubStageUpdate(select, 'select');
     })
     return select;
 }
 
 function updateSubStage(inputName, val, id) {
-    console.log('Request made')
     const targetURL = window.location.href;
-    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
     let reqObj = {
         'action': 'subStageUpdate',
         'subStageName': inputName,
@@ -178,6 +198,7 @@ function updateSubStage(inputName, val, id) {
             'X-CSRFToken': csrfToken,
         },
         success: function(res) {
+            updateCompletionCount(inputName, res['renderCount'], id);
             displayUpdateStatus('success', res['message']);
         },
         error: function (e) {
@@ -186,11 +207,47 @@ function updateSubStage(inputName, val, id) {
     });
 }
 
-function onlyDateInputApplicable(inputName) {
-    if (inputName == 'contracts_issued_to_purchaser' || inputName == 'contracts_received_date' || inputName == 'deposit_received_date' ) {
-        return true;
+function renderCheckIcon(id, action) {
+    const timelineElement = document.getElementById(id).parentNode.parentNode.parentNode
+    const iconWrap = timelineElement.querySelector('.timeLineIcon');
+    const innerHtml = action =='check' ? `<i class="fa-solid fa-circle-check"></i>` : ''
+    iconWrap.innerHTML = innerHtml;
+}
+
+function updateCompletionCount(inputName, opType, id) {
+    // Update the stage completion count if the db value has been added or removed
+    if (opType == 'increment' || opType == 'decrement') {
+        const substageWrapId = getRelatedSubStageWrapId(inputName)
+        const completionCountEl = $(`#${substageWrapId} .completetionCount`);
+        let currentCompletionCount = Number(completionCountEl.text());
+        opType == 'increment' ? currentCompletionCount++ : currentCompletionCount--;
+        completionCountEl.text(currentCompletionCount);
+        opType == 'increment' ? renderCheckIcon(id, 'check') : renderCheckIcon(id, 'remove')
+    } 
+    if(opType == 'static') {
+        renderCheckIcon(id, 'check');
+    } 
+}
+
+function getRelatedSubStageWrapId(inputName) {
+    if (inputName == 'title_deed_send_date' || inputName == 'closing_requirements_received_date' || inputName == 'closing_requirements_returned_date') {
+        return 'contractsExchangedSubStageWrap'
     }
-    return false;
+    return 'saleAgreedSubStageWrap'
+}
+
+function onlyDateInputApplicable(inputName) {
+    switch (inputName) {
+        case 'contracts_issued_to_purchaser':
+        case 'contracts_received_date':
+        case 'deposit_received_date':
+        case 'closing_requirements_received_date':
+        case 'closing_requirements_returned_date':
+        case 'title_deed_send_date':
+            return true;       
+        default:
+            return false;
+    }
 }
 
 

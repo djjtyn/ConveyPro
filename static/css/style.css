@@ -118,7 +118,6 @@
     height: 3em;
     width: 100%;
     border: .1em solid black;
-    border-radius: 8%;
 }
 
 .oppWrap .ForSaleBtn {
@@ -143,7 +142,7 @@
 .oppWrap .SaleAgreedBtn:hover,
 .oppWrap .SaleAgreedBtn:focus {
     background-color: white;
-    color: #A654F0;;
+    color: #A654F0;
     cursor: pointer;
 }
 
@@ -205,11 +204,11 @@
 }
 
 .oppWrap #saleAgreedSubStageWrap {
-    background-color:#c3a7db;
+    background-color:#A654F0;;
 }
 
 .oppWrap #contractsExchangedSubStageWrap {
-    background-color:#ed9ec3;
+    background-color:#FF4AA0
 }
 
 .oppWrap .timeLineIcon {

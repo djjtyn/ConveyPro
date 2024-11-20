@@ -20,13 +20,15 @@
             <!--Sub Stages-->
             <div class="subStageWrap">
                 <!--Sale Agreed-->
-                <div id="saleAgreedSubStageWrap" {% if opportunity.stage.stage != 'Sale Agreed' %}hidden{% endif %}>
-                    <span class="subStageCount"></span>
+                <div id="saleAgreedSubStageWrap" class = 'subStageWrapItem' {% if opportunity.stage.stage != 'Sale Agreed' %}hidden{% endif %}>
+                    <span class="completetionCount">{{opportunity.get_sale_agreed_substage_complete_count}}</span><span>/12</span>
                     <div class="timelineStep">
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.contracts_issued_to_purchaser %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -48,9 +50,9 @@
                                 <div class="substageField">
                                     <label for="Hard CopyDocumentation Requested">Hard Copy Documentation Requested</label>
                                     <select id = 'Hard CopyDocumentation Requested' name = 'hardcopy_docs_requested'>
-                                        <option disabled>Select a Value</option>
-                                        <option value="Yes" {%if opportunity.are_hardcopy_docs_requested %}selected{% endif %}>Yes</option>
-                                        <option value="No" {%if not opportunity.are_hardcopy_docs_requested %}selected{% endif %}>No</option>
+                                        <option disabled selected>Select a Value</option>
+                                        <option value="Yes" {%if opportunity.are_hardcopy_docs_requested and opportunity.are_hardcopy_docs_requested|is_true%}selected{% endif %}>Yes</option>
+                                        <option value="No" {%if not opportunity.are_hardcopy_docs_requested and opportunity.are_hardcopy_docs_requested|is_false %}selected{% endif %}>No</option>
                                     </select>
                                 </div>
                             </div>
@@ -60,7 +62,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.precontract_queries_received_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -71,7 +75,7 @@
                                     {% else %}
                                         <select id="Pre Contract Queries Received" name = 'precontract_queries_received_date'>
                                             <option disabled selected>Select a Value</option>
-                                            <option value="NA" {%if opportunity.precontract_queries_received_date == 'NA'%}selected{%endif%}>N/A</option>
+                                            <option value="NA" {%if opportunity.precontract_queries_received_date|is_NA%}selected{%endif%}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -83,7 +87,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.precontract_queries_response_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -93,8 +99,8 @@
                                         <input type="date" id="Pre Contract Queries Response" name = 'precontract_queries_response_date' value = '{{opportunity.precontract_queries_response_date}}'>
                                     {% else %}
                                         <select id="Pre Contract Queries Response" name = 'precontract_queries_response_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {% if opportunity.precontract_queries_response_date|is_NA %}selected{%endif%}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -106,7 +112,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.chaser_email_one_send_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -116,8 +124,8 @@
                                         <input type="date" id="Chaser Email One Send Date" name = 'chaser_email_one_send_date' value = '{{opportunity.chaser_email_one_send_date}}'>
                                     {% else %}
                                         <select id="Chaser Email One Send Date" name = 'chaser_email_one_send_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {% if opportunity.chaser_email_one_send_date|is_NA %}selected {%endif%}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -129,7 +137,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.rejoinders_received_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -139,8 +149,8 @@
                                         <input type="date" id="Rejoinders Received Date" name = 'rejoinders_received_date' value = '{{opportunity.rejoinders_received_date}}'>
                                     {% else %}
                                         <select id="Rejoinders Received Date" name = 'rejoinders_received_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected >Select a Value</option>
+                                            <option value="NA" {% if opportunity.rejoinders_received_date|is_NA%}selected {%endif%}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -152,7 +162,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.rejoinders_response_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -162,8 +174,8 @@
                                         <input type="date" id="Rejoinders Response Date" name = 'rejoinders_response_date' value = '{{opportunity.rejoinders_response_date}}'>
                                     {% else %}
                                         <select id="Rejoinders Response Date" name = 'rejoinders_response_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {% if opportunity.rejoinders_response_date|is_NA %}selected{% endif %}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -175,7 +187,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.chaser_email_two_send_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -185,8 +199,8 @@
                                         <input type="date" id="Chaser Email Two Send Date" name = 'chaser_email_two_send_date' value = '{{opportunity.chaser_email_two_send_date}}'>
                                     {% else %}
                                         <select id="Chaser Email Two Send Date" name = 'chaser_email_two_send_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {% if opportunity.chaser_email_two_send_date|is_NA %}selected{% endif %}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -198,7 +212,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.further_rejoinders_received_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -208,8 +224,8 @@
                                         <input type="date" id="Further Rejoinders Received Date" name = 'further_rejoinders_received_date' value = '{{opportunity.further_rejoinders_received_date}}'>
                                     {% else %}
                                         <select id="Further Rejoinders Received Date" name = 'further_rejoinders_received_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {% if opportunity.further_rejoinders_received_date|is_NA %}selected{% endif %}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -221,7 +237,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.further_rejoinders_response_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -231,8 +249,8 @@
                                         <input type="date" id="Further Rejoinders Response Dat" name = 'further_rejoinders_response_date' value = '{{opportunity.further_rejoinders_response_date}}'>
                                     {% else %}
                                         <select id="Further Rejoinders Response Date" name = 'further_rejoinders_response_date'>
-                                            <option disabled>Select a Value</option>
-                                            <option value="NA">N/A</option>
+                                            <option disabled selected>Select a Value</option>
+                                            <option value="NA" {% if opportunity.further_rejoinders_response_date|is_NA %}selected{%endif%}>N/A</option>
                                             <option value="date">Select a Date</option>
                                         </select>
                                     {% endif %}
@@ -244,7 +262,9 @@
                         <div class="row">
                             <div class="col-sm-1">                        
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.contracts_received_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -259,7 +279,9 @@
                         <div class="row">
                             <div class="col-sm-1">
                                 <div class="timeLineIcon">
-                                    <i class="fa-solid fa-circle-check"></i>
+                                    {% if opportunity.deposit_received_date%}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-sm-11">
@@ -272,8 +294,59 @@
                     </div>
                 </div>
                 <!--Contracts Exchanged-->
-                <div id="contractsExchangedSubStageWrap" {% if opportunity.stage.stage != 'Contracts Exchanged' %}hidden{% endif %}>
-                    <p>Contracts Exchanged</p>
+                <div id="contractsExchangedSubStageWrap" class = 'subStageWrapItem' {% if opportunity.stage.stage != 'Contracts Exchanged' %}hidden{% endif %}>
+                    <span class="completetionCount">{{opportunity.get_contracts_exchanged_substage_complete_count}}</span><span>/3</span>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    {% if opportunity.closing_requirements_received_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Closing Requirements Received">Closing Requirements Received</label>
+                                    <input type="date" id = 'Closing Requirements Received' name = 'closing_requirements_received_date' {% if opportunity.closing_requirements_received_date %}value = '{{opportunity.closing_requirements_received_date|format_date}}' {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    {% if opportunity.closing_requirements_returned_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Closing Requirements Returned">Closing Requirements Returned</label>
+                                    <input type="date" id = 'Closing Requirements Returned' name = 'closing_requirements_returned_date' {% if opportunity.closing_requirements_returned_date %}value = '{{opportunity.closing_requirements_returned_date|format_date}}' {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timelineStep">
+                        <div class="row">
+                            <div class="col-sm-1">
+                                <div class="timeLineIcon">
+                                    {% if opportunity.title_deed_send_date %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-sm-11">
+                                <div class="substageField">
+                                    <label for="Title Deeds Sent to Purchaser">Title Deeds Sent to Purchaser</label>
+                                    <input type="date" id = 'Title Deeds Sent to Purchaser' name = 'title_deed_send_date' {% if opportunity.title_deed_send_date %}value = '{{opportunity.title_deed_send_date|format_date}}' {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
