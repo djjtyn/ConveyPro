@@ -17,3 +17,7 @@ def is_date_format(value, date_format="%Y-%m-%d"):
 @register.filter
 def format_date(value):
     return value.strftime('%Y-%m-%d')
+
+@register.filter
+def is_NA(value):
+    return value == 'NA'

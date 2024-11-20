@@ -40,10 +40,6 @@ function updateStage() {
     // Only update the stage if it differs from the one the page loaded with
     if($('#stageBtn').text() != selectedStage) {
         const targetURL = window.location.href;
-        $('#stageBtn').removeClass();
-        $('#stageBtn').addClass('stageBtn');
-        $('#stageBtn').addClass(`${selectedStage.split(' ').join('')}Btn`);
-        $('#stageBtn').text(selectedStage);        
         csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
         let reqObj = {
             'action': 'stageUpdate',
@@ -60,6 +56,7 @@ function updateStage() {
                 'X-CSRFToken': csrfToken,
             },
             success: function(res) {
+                renderSelectedStage(selectedStage);
                 displayUpdateStatus('success', res['message']);
             },
             error: function (e) {
@@ -67,6 +64,23 @@ function updateStage() {
             },
         });
     } 
+}
+
+function renderSelectedStage(selectedStage) {
+    $('#stageBtn').removeClass();
+    $('#stageBtn').addClass('stageBtn');
+    $('#stageBtn').addClass(`${selectedStage.split(' ').join('')}Btn`);
+    $('#stageBtn').text(selectedStage);  
+    if(selectedStage == 'Sale Agreed') {
+        $('#contractsExchangedSubStageWrap').attr('hidden', true);
+        $('#saleAgreedSubStageWrap').removeAttr('hidden');
+    } else if(selectedStage == 'Contracts Exchanged')  {
+        $('#saleAgreedSubStageWrap').attr('hidden', true);
+        $('#contractsExchangedSubStageWrap').removeAttr('hidden');
+    } else {
+        $('#contractsExchangedSubStageWrap').attr('hidden', true);
+        $('#saleAgreedSubStageWrap').attr('hidden', true);
+    }
 }
 
 function displayUpdateStatus(status, msg) {
@@ -97,6 +111,7 @@ function processSubStageUpdate(element, elementType) {
         if(selectedVal == 'date') {
             const dateInput = createDateInputElement(parentElement,element,element.id, inputName);   //Create a date input with an id value matching the select element and the ability to revert to original element
             //Remove the select element from the DOM to avoid duplicate element ID
+            renderCheckIcon(element.id, 'uncheck');
             element.remove();
             parentElement.appendChild(dateInput);
         } else {
@@ -114,6 +129,8 @@ function processSubStageUpdate(element, elementType) {
                 //Remove the input element from the DOM to avoid duplicate element ID
                 element.remove();
                 parentElement.appendChild(selectEl);
+                //Remove any checks that previosuly existed for the input
+                renderCheckIcon(selectEl.id, 'uncheck');
             } else {
                 updateSubStage(inputName,selectedVal, element.id);
             }
@@ -130,8 +147,11 @@ function createDateInputElement(parentElement, element, elId, inputName) {
     input.addEventListener('input', function() {
         //If clear button has been selected revert back to the original select element
         if (!this.value) {
+            selectEl = createSelectInputElement(parentElement, element, elId, inputName)
             input.remove();
-            parentElement.appendChild(element);
+            parentElement.appendChild(selectEl);
+            //Remove any checks that previosuly existed for the input
+            renderCheckIcon(element.id, 'uncheck');
         } else {
             // Update Db with selected value
             updateSubStage(element.name,this.value, elId);
@@ -151,16 +171,15 @@ function createSelectInputElement(parentElement, element, elId, inputName) {
         <option value="NA">N/A</option>
         <option value="date">Select a Date</option>
     `;
-    select.addEventListener('change', (e) => {
+    select.addEventListener('change', function(e) {
         processSubStageUpdate(select, 'select');
     })
     return select;
 }
 
 function updateSubStage(inputName, val, id) {
-    console.log('Request made')
     const targetURL = window.location.href;
-    csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
     let reqObj = {
         'action': 'subStageUpdate',
         'subStageName': inputName,
@@ -178,12 +197,20 @@ function updateSubStage(inputName, val, id) {
             'X-CSRFToken': csrfToken,
         },
         success: function(res) {
+            renderCheckIcon(id, 'check');
             displayUpdateStatus('success', res['message']);
         },
         error: function (e) {
             displayUpdateStatus('error', res['message']);
         },
     });
+}
+
+function renderCheckIcon(id, action) {
+    const timelineElement = document.getElementById(id).parentNode.parentNode.parentNode
+    const iconWrap = timelineElement.querySelector('.timeLineIcon');
+    const innerHtml = action =='check' ? `<i class="fa-solid fa-circle-check"></i>` : ''
+    iconWrap.innerHTML = innerHtml;
 }
 
 function onlyDateInputApplicable(inputName) {

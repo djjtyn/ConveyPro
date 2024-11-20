@@ -188,3 +188,8 @@
     width: 100%;
     background-color: white;
 }
+
+.oppWrap .timelineStep .substageField select,
+.oppWrap .timelineStep .substageField input {
+    width:100%;
+}

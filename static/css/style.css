@@ -188,3 +188,34 @@
     width: 100%;
     background-color: white;
 }
+
+.oppWrap .timelineStep .substageField select,
+.oppWrap .timelineStep .substageField input {
+    width:100%;
+}
+
+.oppWrap .subStageWrap {
+    margin: 1em 0;
+}
+
+.oppWrap .subStageWrapItem {
+    padding: .3em;
+    border: .1em solid black;
+    border-radius: 8px;
+}
+
+.oppWrap #saleAgreedSubStageWrap {
+    background-color:#c3a7db;
+}
+
+.oppWrap #contractsExchangedSubStageWrap {
+    background-color:#ed9ec3;
+}
+
+.oppWrap .timeLineIcon {
+    font-size: 1.5em;
+    height: 100%;
+    text-align: center;
+    align-content: center;
+    color: green;
+}
