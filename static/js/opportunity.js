@@ -3,6 +3,8 @@ $(document).ready(() => {
     initStageModalListener();
     initStageModalListeners();
     initSubStageListeners();
+    initNoteListeners();
+    initDocListeners();
 });
 
 
@@ -40,7 +42,7 @@ function updateStage() {
     // Only update the stage if it differs from the one the page loaded with
     if($('#stageBtn').text() != selectedStage) {
         const targetURL = window.location.href;
-        csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
         let reqObj = {
             'action': 'stageUpdate',
             'stage': selectedStage
@@ -248,6 +250,296 @@ function onlyDateInputApplicable(inputName) {
         default:
             return false;
     }
+}
+
+function initNoteListeners() {
+    initNoteAreaListener();
+    initAddNoteListener();
+    initNoteFormListeners();
+    initExistingNoteListeners();
+}
+
+function initNoteAreaListener() {
+    $('#viewNoteBtn').on('click', ()=> {
+        toggleNoteDocArea('note')
+    })
+}
+
+function initAddNoteListener() {
+    $('#addNoteBtn').on('click', function (e) {
+        $(this).css('display', 'none')
+        $('#noteEntryForm').css('display', 'block');
+    }) 
+}
+
+function initNoteFormListeners() {
+    $('#cancelNoteBtn').on('click', () => {
+        cancelNote();
+    }) 
+    $('#saveNoteBtn').on('click', () => {
+        createNewNote();
+    })
+}
+
+function cancelNote() {
+    $('#noteEntryForm').css('display', 'none');
+    $('#addNoteBtn').css('display', 'block');
+    $('#noteContent').removeClass('missingNoteData');
+    $('#noteContent').attr('placeholder', 'Note Content');
+    $('#noteContent').val('');
+    $('#noteTitle').removeClass('missingNoteData');
+    $('#noteTitle').attr('placeholder', 'Note Title');
+    $('#noteTitle').val('');
+}
+
+function createNewNote() {
+    if (all_inputs_populated()) {
+        const noteTitle = $('#noteTitle').val();
+        const noteContent =$('#noteContent').val();
+        processNote('create',noteTitle, noteContent, null);
+    }
+}
+
+function all_inputs_populated() {
+    populated = true;
+    if($('#noteContent').val() == '') {
+        $('#noteContent').addClass('missingNoteData');
+        $('#noteContent').attr('placeholder', 'Content Required');
+        populated = false;    
+    }
+    if(!$('#noteTitle').val()) {
+        $('#noteTitle').addClass('missingNoteData');
+        $('#noteTitle').attr('placeholder', 'Title Required');
+        populated = false
+    }
+    return populated;
+}
+
+function processNote(action, noteTitle, noteContent, id) {
+    const targetURL = window.location.href;
+    const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    let reqObj = {
+        'action': 'actionNote',
+        'actionType': action,
+        'title': noteTitle,
+        'value': noteContent,
+    }
+    if (action != 'create') {
+        reqObj.noteId = id;
+    }
+    $.ajax({
+        type: 'POST',
+        url: targetURL,
+        data: JSON.stringify(reqObj),
+        processData: false,
+        contentType: false,
+        cache: false,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        },
+        success: function(res) {
+            $('#noteDeleteModal').modal('hide');
+            const noteId = res['affectedNoteId']
+            displayUpdateStatus('success', res['message'])
+            if (action == 'create') {
+                //Increment counter, append note to note list and hide note entry area
+                updateNoteCounter(res['renderCount']);
+                renderNewNote(noteId, noteTitle,noteContent);
+                cancelNote();
+            }
+            if(res['renderCount'] == 'decrement') {
+                removeNote(noteId);
+                updateNoteCounter(res['renderCount']);
+            }
+        },
+        error: function (e) {
+            console.log('Error at processNoteSave(): ' + e);
+        },
+    });
+}
+
+function renderNewNote(noteId, noteTitle,noteContent) {
+    const form = $(`
+        <form>
+            <input type="text" value = '${noteId}' class = 'noteId' disabled hidden>
+            <input type="text" class="form-control-plaintext noteTitle" value = '${noteTitle}' disabled>
+            <textarea class="form-control-plaintext noteContent" value = '${noteContent}' disabled>${noteContent}</textarea>
+            </form>
+    `)
+    form.append(renderNoteButtons(form));
+    $('#existingNotes').prepend(form);
+}
+
+function renderNoteButtons(parentForm) {
+    const btnWrap = document.createElement('div');
+    btnWrap.setAttribute('class', 'row');
+    buttons = ['delete','edit'];
+    for(let i=0;i<buttons.length;i++) {
+        const btn = document.createElement('button');
+        btn.setAttribute('type', 'button');
+        const colElement = document.createElement('div');
+        colElement.setAttribute('class', 'col-sm-6');
+        let className = 'deleteNoteBtn';
+        let btnInner = '<i class="fa fa-trash" aria-hidden="true"></i>';
+        //Delete btn wil lbe at index 0
+        if(i==0) {
+            btn.addEventListener('click', function() {
+                displayNoteDeletionModel(btn);
+            })
+        } else {
+            //edit btn index
+            className = 'editNoteBtn';
+            btnInner = '<i class="fas fa-edit" aria-hidden="true"></i>';
+            btn.addEventListener('click', function() {
+                displayAsEditableNote(parentForm)
+            })
+        }
+        btn.setAttribute('class', className);
+        btn.innerHTML = btnInner;
+        colElement.appendChild(btn);
+        btnWrap.appendChild(colElement);
+    }
+    return btnWrap;
+}
+
+function updateNoteCounter(action) {
+    const noteCounter = $('#noteCounter');
+    let currentNoteCount = Number(noteCounter.text());
+    action == 'increment'? currentNoteCount++: currentNoteCount--;
+    noteCounter.text(currentNoteCount);
+}
+
+function removeNote(noteId) {
+    $(`input[value="${noteId}"]`).closest('form').remove();
+}
+
+function initExistingNoteListeners() {
+    initNoteEdit();
+    initNoteDelete();
+}
+
+function initNoteEdit() {
+    $('#existingNotes .editNoteBtn').each(function(i, element) {
+        $(element).on('click', () => {
+            const parentForm = $(element).closest('form');
+            displayAsEditableNote(parentForm);   
+        })
+    });
+}
+
+function displayAsEditableNote(parentForm) {
+    const noteTitle = parentForm.find('.noteTitle');
+    const noteContent = parentForm.find('.noteContent');
+    const deleteNoteBtn = parentForm.find('.deleteNoteBtn');
+    const editNoteBtn = parentForm.find('.editNoteBtn');
+    const originalTitleVal = noteTitle.val();
+    const originalContentVal = noteContent.val();
+    noteTitle.removeAttr('disabled');
+    noteContent.removeAttr('disabled');
+    deleteNoteBtn.css('display', 'none');
+    editNoteBtn.css('display', 'none');
+
+    if(parentForm.find('.noteEditActions').length > 0) {
+        parentForm.find('.cancelEditBtn').css('display', 'block');
+        parentForm.find('.saveEditBtn').css('display', 'block');
+        return;
+    }
+    // Will create
+    createNoteEditButtons(parentForm, noteTitle, noteContent, deleteNoteBtn, editNoteBtn, originalTitleVal, originalContentVal);
+}
+
+function createNoteEditButtons(parentForm, noteTitle, noteContent, deleteNoteBtn, editNoteBtn, originalTitleVal, originalContentVal) {
+    const btnArea = parentForm.find('.row');
+    btnArea.find('.col-sm-6').each(function(i, element) {
+        const newBtn = document.createElement('button');
+        newBtn.setAttribute('type', 'button');
+        //Render first element as cancel button
+        if(i == 0) {
+            newBtn.innerHTML = 'Cancel';
+            newBtn.setAttribute('class', 'cancelEditBtn');
+            newBtn.addEventListener('click', ()=> {
+                cancelNoteEdit(parentForm, noteTitle, noteContent, deleteNoteBtn, editNoteBtn, originalTitleVal, originalContentVal);
+            })
+        } else {
+            newBtn.innerHTML = 'Save'
+            newBtn.setAttribute('class', 'saveEditBtn');
+            newBtn.addEventListener('click', () => {
+                editNote(parentForm, noteTitle.val(), noteContent.val());
+                cancelNoteEdit(parentForm, noteTitle, noteContent, deleteNoteBtn, editNoteBtn, null, null);
+            })
+        }
+        element.appendChild(newBtn);
+    })
+    btnArea.addClass('noteEditActions');
+}
+
+function cancelNoteEdit(parentForm, noteTitle, noteContent, deleteNoteBtn, editNoteBtn, originalTitleVal, originalContentVal) {
+    parentForm.find('.cancelEditBtn').css('display', 'none');
+    parentForm.find('.saveEditBtn').css('display', 'none');
+    deleteNoteBtn.css('display', 'block');
+    editNoteBtn.css('display', 'block');
+    //Revert to values prior to clicking the edit button
+    if(originalTitleVal) {
+        noteTitle.val(originalTitleVal);
+    }
+    if(originalContentVal) {
+        noteContent.val(originalContentVal);
+    }
+    noteTitle.prop('disabled', true);
+    noteContent.prop('disabled', true);
+}
+
+function editNote(parentForm, noteTitle, noteContent) {
+    //Get the note id
+    const noteId = parentForm.find('.noteId').val();
+    processNote('update',noteTitle, noteContent, noteId)
+}
+
+function initNoteDelete() {
+    $('#cancelNoteDeletionBtn').on('click', () => {
+        $('#noteDeleteModal').modal('hide');
+    })
+    $('#existingNotes .deleteNoteBtn').each(function(i, element) {
+        $(element).on('click', () => {
+            displayNoteDeletionModel(element);
+        });
+    });
+}
+
+function displayNoteDeletionModel(element) {
+    const parentForm = $(element).closest('form');
+    $('#noteDeleteModal').modal('show');
+    //Unbind the current event handler from the delete confimation btn to allow selected note id to be passed in new event handler
+    $('#confirmNoteDeletionBtn').unbind('click');
+    $('#confirmNoteDeletionBtn').on('click', () => {
+        const noteId = parentForm.find('.noteId').val();
+        deleteNote(noteId);
+    })
+}
+
+
+function deleteNote(noteId) {
+    processNote('delete',null, null, noteId)
+}
+
+function toggleNoteDocArea(visibleTarget) {
+    if(visibleTarget == 'note') {
+        $('#noteWrap').show();
+        $('#docWrap').hide()
+    } else {
+        $('#docWrap').show();
+        $('#noteWrap').hide();
+    }
+}
+
+function initDocListeners() {
+    initDocumentAreaListener();
+}
+
+function initDocumentAreaListener() {
+    $('#viewDocBtn').on('click', ()=> {
+        toggleNoteDocArea('document')
+    })
 }
 
 

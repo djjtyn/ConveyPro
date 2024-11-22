@@ -193,7 +193,8 @@
     width:100%;
 }
 
-.oppWrap .subStageWrap {
+.oppWrap .subStageWrap, 
+.oppWrap .noteDocWrap {
     margin: 1em 0;
 }
 
@@ -217,4 +218,42 @@
     text-align: center;
     align-content: center;
     color: green;
+}
+
+/*Note/Doc Area*/
+#noteEntryForm {
+    display: none;
+}
+
+#noteEntryForm input,
+#noteEntryForm textarea{
+    margin: .1em;
+    border: .1em solid black;
+}
+
+#noteEntryForm .missingNoteData {
+    background-color: red;
+    color: white;
+}
+
+#noteEntryForm .missingNoteData::placeholder{
+    color: white;
+}
+
+#existingNotes form {
+    border: .1em solid black;
+    margin: .1em 0;
+    padding: .4em;
+}
+
+#existingNotes form input {
+    border-bottom: .1em solid black;
+}
+
+#existingNotes form input .deleteNoteBtn {
+    margin-right: 80%;
+}
+
+#existingNotes form input .editNoteBtn {
+    margin-left: 80%;
 }

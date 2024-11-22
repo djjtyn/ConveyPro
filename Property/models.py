@@ -63,9 +63,14 @@ class Document(models.Model):
 class Note(models.Model):
     title =  models.CharField(max_length = 400)
     content = models.TextField(max_length=1000, null=True)
+    created_at = models.DateTimeField(null = False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='created_by')
+    modified_at = models.DateTimeField(null = False)
     modifed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='modified_by')
     opportunity = models.ForeignKey('Opportunity', on_delete = models.SET_NULL, null = True)
+
+    def __str__(self):
+        return self.title
 
 class Opportunity(models.Model):
     stage = models.ForeignKey('Stage', on_delete = models.SET_NULL, null = True)

@@ -1,5 +1,7 @@
 from django.http import JsonResponse
-from .models import Stage
+from django.shortcuts import get_object_or_404
+from .models import Stage, Note
+from Auth.models import CustomUser
 from django.utils import timezone
 
 def update_stage(opportunity, stage_name):
@@ -66,3 +68,74 @@ def is_static_date_input(sub_stage):
         'closing_requirements_received_date', 'closing_requirements_returned_date', 'title_deed_send_date'
     ]
     return sub_stage in static_inputs
+
+def process_note(logged_in_user,opportunity, action_type, title, content, note_id=None):
+    try:
+        if action_type == 'delete':
+            note_status = delete_note(note_id)
+            render_note_counter = 'decrement'
+        #if valid note id is passed, update the note 
+        if action_type == 'update':
+            note_status = update_note(note_id, title,content, logged_in_user)
+            render_note_counter = 'static'
+        if action_type == 'create':   
+            #if no note id exists create a new note 
+            note_status,note_id = create_note(opportunity, title,content, logged_in_user)
+            render_note_counter = 'increment'
+        return JsonResponse ({
+            'message': note_status,
+            'renderCount': render_note_counter,
+            'affectedNoteId': note_id
+            }, status = 200
+        )
+    except Exception as e:
+        print(f'Error at process_note: {e}')
+
+def delete_note(note_id):
+    update_status = 'Error deleting Note'
+    try:
+        note = Note.objects.get(pk=note_id)
+        note.delete()
+        update_status = 'Note Deleted'
+        return update_status
+    except Exception as e:
+        print(f'Error at delete_note: {e}')
+        return update_status
+    print('deleting')
+
+def update_note(id, title,content, logged_in_user):
+    update_status = 'Error updating Note'
+    try:
+        note = get_object_or_404(Note, pk=id)
+        if note:
+            updated = False
+            if title != note.title:
+                note.title = title
+                updated = True
+            if content != note.content:
+                note.content = content
+                updated = True
+            if updated:
+                note.modifed_by = logged_in_user
+                note.modified_at = timezone.now()
+                note.save() 
+                update_status = 'Note Updated'
+        return update_status
+    except Exception as e: 
+        print(f'Error at update_note: {e}')
+        return update_status
+    
+def create_note(opportunity, title,content, logged_in_user):
+    update_status = 'Error creating Note'
+    try:
+        note = Note(
+            title = title, content = content, created_at = timezone.now(), created_by = logged_in_user,modified_at = timezone.now(), modifed_by = logged_in_user, opportunity = opportunity
+        )
+        note.save()
+        update_status = 'Note Created'
+        return update_status, note.id
+    except Exception as e:
+        print(f'Error at create note: {e}')
+        return update_status 
+
+
