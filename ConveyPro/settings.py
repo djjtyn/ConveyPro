@@ -82,12 +82,19 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Determine to use cloud storage or local
+if os.environ['CLOUD_STORAGE'] == 'False':
+    # Use local storage
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+

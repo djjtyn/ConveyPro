@@ -1,8 +1,9 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from .models import Stage, Note
+from .models import Stage, Note, LocalDocument
 from Auth.models import CustomUser
 from django.utils import timezone
+import os
 
 def update_stage(opportunity, stage_name):
     try:
@@ -101,7 +102,6 @@ def delete_note(note_id):
     except Exception as e:
         print(f'Error at delete_note: {e}')
         return update_status
-    print('deleting')
 
 def update_note(id, title,content, logged_in_user):
     update_status = 'Error updating Note'
@@ -137,5 +137,48 @@ def create_note(opportunity, title,content, logged_in_user):
     except Exception as e:
         print(f'Error at create note: {e}')
         return update_status 
+    
+def upload_files(opportunity, files):
+    status = 'Upload Error'
+    try:
+        if os.environ['CLOUD_STORAGE'] == 'False':
+            use_local_storage = True
+        file_counter = 0
+        file_tracker = []
+        for file in files:
+            if use_local_storage:
+                stored_file = LocalDocument(name = file.name, size = file.size, opportunity=opportunity, file = file)
+            stored_file.save()
+            file_obj = {
+                'id': stored_file.id,
+                'name': stored_file.name,
+                'url': stored_file.file.url
+            }
+            file_tracker.append(file_obj)
+            file_counter+=1
+        status = f'{file_counter} Files Uploaded' if file_counter > 1 else 'File Uploaded'
+        return JsonResponse (
+            {
+                'message': status,
+                'files': file_tracker
+            }, status = 200)
+    except Exception as e:
+        print(f'Error at create note: {e}')
+        return JsonResponse ({'message': status}, status = 500)
+    
+def delete_document(document_id):
+    status = 'Error deleting document'
+    try:
+        if os.environ['CLOUD_STORAGE'] == 'False':
+            use_local_storage = True
+        if use_local_storage:
+            document = LocalDocument.objects.get(pk=document_id)
+            document.delete_file()
+        document.delete()
+        status = 'Document Deleted'
+        return JsonResponse ({'message': status}, status = 200)
+    except Exception as e:
+        print(f'Error at delete_document: {e}')
+        return JsonResponse ({'message': status}, status = 500)
 
 

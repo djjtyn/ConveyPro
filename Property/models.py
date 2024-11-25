@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -54,11 +55,26 @@ class Property(models.Model):
     def output_bedroom_amount(self):
         return f'{self.bedroom_amount} Bed'
 
+#Document will extend to account for both local stored and hosted documents
 class Document(models.Model):
     name = models.CharField(max_length = 400)
     size = models.IntegerField(null=True)
-    document_url = models.TextField()
     opportunity = models.ForeignKey('Opportunity', on_delete = models.SET_NULL, null = True)
+
+
+    class Meta:
+        abstract = True
+
+class LocalDocument(Document):
+    file = models.FileField(upload_to='uploads/')
+
+    def delete_file(self):
+        if self.file:
+            if os.path.isfile(self.file.path):
+                os.remove(self.file.path)
+
+class HostedDocument(Document):
+    document_url = models.TextField()
 
 class Note(models.Model):
     title =  models.CharField(max_length = 400)

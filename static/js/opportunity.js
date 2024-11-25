@@ -343,13 +343,13 @@ function processNote(action, noteTitle, noteContent, id) {
             displayUpdateStatus('success', res['message'])
             if (action == 'create') {
                 //Increment counter, append note to note list and hide note entry area
-                updateNoteCounter(res['renderCount']);
+                updateCounter('note', res['renderCount']);
                 renderNewNote(noteId, noteTitle,noteContent);
                 cancelNote();
             }
             if(res['renderCount'] == 'decrement') {
                 removeNote(noteId);
-                updateNoteCounter(res['renderCount']);
+                updateCounter('note', res['renderCount']);
             }
         },
         error: function (e) {
@@ -402,11 +402,11 @@ function renderNoteButtons(parentForm) {
     return btnWrap;
 }
 
-function updateNoteCounter(action) {
-    const noteCounter = $('#noteCounter');
-    let currentNoteCount = Number(noteCounter.text());
+function updateCounter(counterType, action) {
+    const counterElement = counterType == 'note'? $('#noteCounter'): $('#documentCounter');
+    let currentNoteCount = Number(counterElement.text());
     action == 'increment'? currentNoteCount++: currentNoteCount--;
-    noteCounter.text(currentNoteCount);
+    counterElement.text(currentNoteCount);
 }
 
 function removeNote(noteId) {
@@ -524,16 +524,20 @@ function deleteNote(noteId) {
 
 function toggleNoteDocArea(visibleTarget) {
     if(visibleTarget == 'note') {
-        $('#noteWrap').show();
-        $('#docWrap').hide()
+        $('#noteWrap').css('display', 'block');
+        $('#docWrap').css('display', 'none');
     } else {
-        $('#docWrap').show();
-        $('#noteWrap').hide();
+        $('#docWrap').css('display', 'block');
+        $('#noteWrap').css('display', 'none')
     }
 }
 
 function initDocListeners() {
     initDocumentAreaListener();
+    initSelectDocForUpload();
+    initFileSelectorHandler();
+    initDocUploadModal();
+    initExistingDocHandlers();
 }
 
 function initDocumentAreaListener() {
@@ -541,5 +545,168 @@ function initDocumentAreaListener() {
         toggleNoteDocArea('document')
     })
 }
+
+function initSelectDocForUpload() {
+    $('#addDocBtn').on('click', ()=>{
+        $('#fileSelector').click();
+    })
+}
+
+function initFileSelectorHandler() {
+    $('#fileSelector').on('change', (e) => {
+        const el = e.target;  
+        const fileAmount = el.files.length;
+        const fileList = $('#docsToUpload');
+        $('#uploadAmount').text(fileAmount);
+        if(fileAmount>0 && $('#displayFilesForUpload').css('display') == 'none') {
+            $('#displayFilesForUpload').css('display', 'block');
+            fileList.html('');
+            for(let i = 0;i<fileAmount;i++) {
+                const listItem = (`<li>${el.files[i].name}</li>`);
+                fileList.append(listItem);
+            }
+        } 
+        if(fileAmount<1) {
+            $('#displayFilesForUpload').css('display', 'none');
+            fileList.html('');
+        }
+    })
+}
+
+function initDocUploadModal() {
+    $('#displayFilesForUpload').on('click', () => {
+        $('#docModal').modal('show');
+    })
+    $('#cancelDocUploadBtn').on('click', () => {
+        $('#docModal').modal('hide');
+    })
+    $('#confirmDocUploadBtn').on('click', (e) => {
+        $('#cancelDocUploadBtn').css('display', 'none');
+        e.target.innerHTML = 'Uploading...';
+        uploadDocument();
+    })
+}
+
+function uploadDocument() {
+    try {
+        const targetURL = window.location.href;
+        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+        const fileSelectorFiles = document.getElementById('fileSelector').files;
+        let formData = new FormData();
+        for(let i=0;i< fileSelectorFiles.length;i++) {
+            formData.append('files', fileSelectorFiles[i]);
+        }
+        $.ajax({
+            type: 'POST',
+            url: targetURL,
+            data: formData,
+            processData: false,
+            contentType: false,
+            cache: false,
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+            success: function(res) {
+                $('#docModal').modal('hide');
+                $('#confirmDocUploadBtn').html('Confirm');
+                for(let i=0;i<res['files'].length;i++) {
+                    displayUpdateStatus('success', res['message']);
+                    renderNewDocument(res['files'][i]);
+                    updateCounter('document', 'increment');
+                }
+            },
+            error: function (e) {
+                displayUpdateStatus('error', res['message']);
+            },
+        });
+    }catch(e) {
+        console.log(e);
+    }
+}
+
+function renderNewDocument(docObj) {
+    const docItemWrap = document.createElement('div');
+    const documentId = docObj['id'];
+    const documentName = docObj['name'];
+    docItemWrap.classList.add('docItemWrap');
+    docItemWrap.innerHTML = `
+        <div class="docItemWrap">
+            <input type="hidden" name="docId" value = "${documentId}">    
+            <div class="row">
+                <div class="col-sm-1">
+                <i class="fa-regular fa-file"></i>
+            </div>
+            <div class="col-sm-8 documentName">
+                ${documentName}
+            </div>
+            <div class = "col-sm-3">
+                <i class="fa-regular fa-trash-can"></i>
+                <a href="${docObj['url']}" download = '${documentName}'>
+                    <i class="fa-solid fa-download"></i>
+                </a>
+            </div>
+        </div>`;
+    //Add event listeners to the buttons
+    docItemWrap.querySelector('.fa-trash-can').addEventListener('click', () => {
+        displayDocDeletionModel(documentId, documentName, docItemWrap);
+    });
+    docItemWrap.querySelector('.fa-download').addEventListener('click', () => {
+        console.log('Downoading');
+    });
+    $('#existingDocs').prepend(docItemWrap);
+}
+
+function initExistingDocHandlers() {
+    $('#existingDocs .docItemWrap').each(function (i, element) {
+        const documentId = $(element).find('input[name="docId"]').val();
+        const fileName = $(element).find('.documentName').text();
+        //Delete
+        $(element).find('.fa-trash-can').on('click', () => {
+            displayDocDeletionModel(documentId, fileName, element);
+        })
+        //Download
+    })
+}
+
+function displayDocDeletionModel(documentId, fileName, element) {
+    $('#documentDeleteName').html(fileName);
+    $('#docDeleteModal').modal('show');
+    //Unbind the current event handler from the delete confimation btn to allow selected note id to be passed in new event handler
+    $('#confirmDocDeletionBtn').unbind('click');
+    $('#confirmDocDeletionBtn').on('click', () => {
+        deleteDocument(documentId,element);
+    })
+}
+
+function deleteDocument(documentId, element) {
+    const targetURL = window.location.href;
+    const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    let reqObj = {
+        'action': 'deleteDocument',
+        'docId': documentId,
+    }
+    $.ajax({
+        type: 'POST',
+        url: targetURL,
+        data: JSON.stringify(reqObj),
+        processData: false,
+        contentType: false,
+        cache: false,
+        headers: {
+            'X-CSRFToken': csrfToken,
+        },
+        success: function(res) {
+            $('#docDeleteModal').modal('hide');
+            displayUpdateStatus('success', res['message']);
+            updateCounter('document', res['renderCount']);
+            element.remove();
+        },
+        error: function (e) {
+            console.log('Error at processNoteSave(): ' + e);
+        },
+    });
+
+}
+
 
 
