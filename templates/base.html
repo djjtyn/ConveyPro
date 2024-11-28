@@ -19,23 +19,23 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="#">Overview</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="{% url 'property:view_opportunities' %}">Properties</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Dropdown
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#">Action</a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Something else here</a></li>
-              </ul>
-            </li>
+            {% if development %}
+              <li>
+                <select id="developmentSelector">
+                  <option value="" selected disabled>Filter by Development</option>
+                  <option value="all" selected>All</option>
+                  {%for dev in developments %}
+                    <option value = "{{dev.formatted_url_name}}" {% if dev.formatted_url_name == development %} selected{% endif %}>{{dev.name}}</option>
+                  {% endfor %}
+                </select>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" href="{% url 'property:view_overview' development %}">Overview</a>       
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{% url 'property:view_opportunities' development %}">Properties</a>
+              </li>
+            {% endif %}
           </ul>
           <ul class = 'navbar-nav ms-auto'>
             <!--if user is logged in, display heading to logout otherwise display headings to login and register-->
@@ -50,7 +50,7 @@
                 <a class="nav-link" href="{% url 'Auth:registration_form' %}">Register</a>
               </li>
 				      <li class="nav-item">
-					      <a class="nav-link" href="{% url 'Auth:login_form' %}">Login</a>
+					      <a class="nav-link" href="{% url 'Auth:login' %}">Login</a>
 				      </li>
             {% endif %}
           </ul>

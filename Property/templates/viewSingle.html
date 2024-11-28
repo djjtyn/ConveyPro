@@ -3,7 +3,14 @@
 {% block page_title %}Listed Properties{% endblock %}
 {% block content %}
 <div class="oppWrap">
-    <a href="{% url 'property:view_opportunities' %}" class = 'backIcon'><i class="fa fa-arrow-left" aria-hidden="true"></i></a>
+    <a href="{% url 'property:view_opportunities' development %}" class = 'backIcon'><i class="fa fa-arrow-left" aria-hidden="true"></i></a>
+    {% if audit_history %}
+        <div class="row">
+            <div class="col-sm-12">
+                <button id = 'viewAuditBtn'>Change History</button>
+            </div>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-sm-12">
             <span class = 'propertyName'>{{opportunity.property}}</span><span class = 'bedRoomAmount'> &#x2022 {{opportunity.property.bedroom_amount}} Bedroom</span>
@@ -408,16 +415,49 @@
                         {% endfor %}
                     </div>
                 </div>
-                <div id="docWrap" hidden>
-                    <p>Documents here</p>
+                <div id="docWrap">
+                    <div id ="newDocArea">
+                        <div class="row">
+                            <div class="col-sm-12 col-md-6">
+                                <h5><span id = 'documentCounter'>{{documents|length}}</span><span> Documents</span></h5>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                                <input type="file" id="fileSelector" name = 'files' multiple hidden>
+                                <button id = 'addDocBtn'>Select Documents for Upload</button>
+                            </div>
+                            <button id="displayFilesForUpload">View <span id = 'uploadAmount'></span> Document(s) Upload Details</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="existingDocs">
+                        {% for document in documents %}
+                            <div class="docItemWrap">
+                                <input type="hidden" name="docId" value = "{{document.id}}">
+                                <div class="row">
+                                    <div class="col-sm-1">
+                                        <i class="fa-regular fa-file"></i>
+                                    </div>
+                                    <div class="col-sm-8 documentName">
+                                        {{document.name}}
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                        <a href="{{document.file.url}}" download = '{{document.name}}'>
+                                            <i class="fa-solid fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 
             </div>
         </div>
-    </div>
+
     
     <!-- Stage Modal -->
-    <div class="modal fade" id="stageModal" tabindex="-1" aria-labelledby="stageModal" aria-hidden="true">
+    <div class="modal fade" id="stageModal" tabindex="-1" aria-labelledby="stageModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -453,8 +493,42 @@
         </div>
     </div>
 
+    <!--Audit Logs Modal-->
+    <div class="modal fade" id="auditModal" tabindex="-1" aria-labelledby="auditModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Audit History - {{opportunity.property}} </h5>
+                </div>
+                <div class="modal-body">
+                    {% if audit_history %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Made By</th>
+                                <th scope="col">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for audit in audit_history %}
+                            <tr>
+                                <td>{{audit.get_created_date}}</td>
+                                <td>{{audit.made_by}}</td>
+                                <td>{{audit.details}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    <button id = 'closeAuditModalBtn'>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!--Note Deletion Modal-->
-    <div class="modal fade" id="noteDeleteModal" tabindex="-1" aria-labelledby="stageModal" aria-hidden="true">
+    <div class="modal fade" id="noteDeleteModal" tabindex="-1" aria-labelledby="noteDeleteModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -471,8 +545,49 @@
             </div>
         </div>
     </div>
+
+    <!--Doc Upload Modal-->
+    <div class="modal fade" id="docModal" tabindex="-1" aria-labelledby="docModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload the following documents?</h5>
+                </div>
+                <div class="modal-body">
+                    <ul id = 'docsToUpload'></ul>
+                    <button id = 'cancelDocUploadBtn'>
+                        Cancel
+                    </button>
+                    <button id = 'confirmDocUploadBtn'>
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Doc Delete Modal-->
+    <div class="modal fade" id="docDeleteModal" tabindex="-1" aria-labelledby="docDeleteModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Are you sure you want to delete this File?</h5>
+                </div>
+                <div class="modal-body">
+                    <p id = 'documentDeleteName'></p>
+                    <button id = 'cancelDocDeletionBtn'>
+                        Cancel
+                    </button>
+                    <button id = 'confirmDocDeletionBtn'>
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
+
 {% block pageScript %}
-<script src="../../static/js/opportunity.js"></script>
+<script src="../../../static/js/opportunity.js"></script>
 {% endblock %}

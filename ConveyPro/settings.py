@@ -8,9 +8,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ['DJANGO_SECRET']
 
-DEBUG = True    # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True   # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -46,6 +49,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'ConveyPro.context_processors.context'
             ],
         },
     },
@@ -97,4 +101,4 @@ if os.environ['CLOUD_STORAGE'] == 'False':
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
+LOGIN_URL = '/auth/login/'

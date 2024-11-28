@@ -63,7 +63,7 @@
         <!--List Items-->
         {% for opp in opportunities %}
         <div class="oppListItem {{opp.property.get_formatted_bedroom_amount}} {{opp.stage|cut:' '}} {{opp.getIdleStageTimeRange}}">
-            <a href="{% url 'property:view_opportunity' opp.id %}"" class = 'redirectUrl'></a>
+            <a href="{% url 'property:view_opportunity' development opp.id %}"" class = 'redirectUrl'></a>
             <div class="row">
                 <div class="col-md-3">
                     <p>{{opp.property}}</p>

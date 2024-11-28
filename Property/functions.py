@@ -1,11 +1,12 @@
+from datetime import datetime
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from .models import Stage, Note, LocalDocument
+from .models import Stage, Note, LocalDocument, ChangeAudit, ChangeType
 from Auth.models import CustomUser
 from django.utils import timezone
 import os
 
-def update_stage(opportunity, stage_name):
+def update_stage(logged_in_user, opportunity, stage_name):
     try:
         #Get existing stage
         current_stage = opportunity.stage
@@ -14,22 +15,26 @@ def update_stage(opportunity, stage_name):
         opportunity.in_listed_stage_since = timezone.now()
         opportunity.save()
         audit_log_msg = f'Stage updated from {current_stage} to {updated_stage}'
+        create_audit_record(opportunity, audit_log_msg, logged_in_user, 'Stage')
         return JsonResponse ({'message': audit_log_msg}, status = 200)
     except Exception as e:
         return JsonResponse ({'status': 'Error occurred with stage update'}, status = 500)
     
-def update_sub_stage(opportunity, sub_stage, value, user_friendly_substage_name):
+def update_sub_stage(logged_in_user, opportunity, sub_stage, value, user_friendly_substage_name):
     try:
+        print(value)
         # Get the current value for the substage before update
         current_val = getattr(opportunity, sub_stage)
         # Determine if increment/decriment of sub stage counter is required
         completed_counter_action = determine_completed_counter_action(current_val, value)
         # Create a dynamic audit message
         audit_log_msg = create_log_msg(current_val, user_friendly_substage_name, value)
+        print(audit_log_msg)
         #The value may need to be formatted prior to entering db
         value = format_value(sub_stage, value)
         setattr(opportunity, sub_stage, value)
         opportunity.save()
+        create_audit_record(opportunity, audit_log_msg, logged_in_user, 'Substage')
         return JsonResponse ({
             'message': audit_log_msg,
             'renderCount': completed_counter_action
@@ -47,11 +52,24 @@ def determine_completed_counter_action(value, update_value):
     return 'decrement'
 
 def create_log_msg(current_val, user_friendly_substage_name, value):
+    # Create user friendly date format for updated value if required
+    value = format_date_value_if_required(value, '%Y-%m-%d')
     #Dont need to consider prior value as it was empty 
     if current_val == None or current_val == 'NA':
         return f'{user_friendly_substage_name} set as {value}'
-    #Prior value added to audit message
+    # Create user friendly date format for prior value if required
+    current_val = format_date_value_if_required(current_val, '%Y-%m-%d %H:%M:%S')
     return f'{user_friendly_substage_name} updated from {current_val} to {value}'
+
+def format_date_value_if_required(input, initialFormat):
+    # If input is already a date there is no need to conver it to a date
+    if isinstance(input, datetime):
+        return input.strftime("%d/%m/%Y")
+    try:
+        date_obj = datetime.strptime(input, initialFormat)
+        return date_obj.strftime("%d/%m/%Y")
+    except:
+        return input
 
 def format_value(sub_stage, value):
     # Format Yes/No as boolean
@@ -83,6 +101,7 @@ def process_note(logged_in_user,opportunity, action_type, title, content, note_i
             #if no note id exists create a new note 
             note_status,note_id = create_note(opportunity, title,content, logged_in_user)
             render_note_counter = 'increment'
+        create_audit_record(opportunity,  note_status, logged_in_user, 'Note')
         return JsonResponse ({
             'message': note_status,
             'renderCount': render_note_counter,
@@ -138,7 +157,7 @@ def create_note(opportunity, title,content, logged_in_user):
         print(f'Error at create note: {e}')
         return update_status 
     
-def upload_files(opportunity, files):
+def upload_files(logged_in_user, opportunity, files):
     status = 'Upload Error'
     try:
         if os.environ['CLOUD_STORAGE'] == 'False':
@@ -157,6 +176,7 @@ def upload_files(opportunity, files):
             file_tracker.append(file_obj)
             file_counter+=1
         status = f'{file_counter} Files Uploaded' if file_counter > 1 else 'File Uploaded'
+        create_audit_record(opportunity, status, logged_in_user, 'Document')
         return JsonResponse (
             {
                 'message': status,
@@ -166,7 +186,7 @@ def upload_files(opportunity, files):
         print(f'Error at create note: {e}')
         return JsonResponse ({'message': status}, status = 500)
     
-def delete_document(document_id):
+def delete_document(logged_in_user, opportunity, document_id):
     status = 'Error deleting document'
     try:
         if os.environ['CLOUD_STORAGE'] == 'False':
@@ -176,9 +196,62 @@ def delete_document(document_id):
             document.delete_file()
         document.delete()
         status = 'Document Deleted'
+        create_audit_record(opportunity, status, logged_in_user, 'Document')
         return JsonResponse ({'message': status}, status = 200)
     except Exception as e:
         print(f'Error at delete_document: {e}')
         return JsonResponse ({'message': status}, status = 500)
+    
+def get_overview_data(opportunities, total_amount):
+    opp_obj = {}
+    if opportunities:
+        for_sale_amount = 0
+        sale_agreed_amount = 0
+        contracts_exchanged_amount = 0
+        sold_amount = 0 
+        idle_stage_one_amount = 0
+        idle_stage_two_amount = 0
+        idle_stage_three_amount = 0
+        for opp in opportunities:
+            if opp.stage.stage == "For Sale":
+                for_sale_amount+=1
+            if opp.stage.stage == "Sale Agreed":
+                sale_agreed_amount +=1
+                if opp.getIdleStageTimeRange() == 'idleTimeStageOne':
+                    idle_stage_one_amount +=1
+                elif opp.getIdleStageTimeRange() == 'idleTimeStageTwo':
+                    idle_stage_two_amount +=1
+                elif opp.getIdleStageTimeRange() == 'idleTimeStageThree':
+                    idle_stage_three_amount +=1
+            if opp.stage.stage == "Contracts Exchanged":
+                contracts_exchanged_amount +=1
+            if opp.stage.stage == "Sold":
+                sold_amount +=1   
+        # Create an object but only include keys which have values > 0
+        if for_sale_amount > 0:
+            opp_obj['for_sale_amount'] = for_sale_amount
+            opp_obj['for_sale_percent'] = round(for_sale_amount / total_amount * 100, 1)
+            opp_obj['for_sale_donut_degree_render'] = round(3.6 * opp_obj['for_sale_percent'], 1)
+        if sale_agreed_amount > 0:
+            opp_obj['sale_agreed_amount'] = sale_agreed_amount
+            opp_obj['sale_agreed_percent'] = round(sale_agreed_amount / total_amount * 100, 1)
+            opp_obj['sale_agreed_donut_degree_render'] = round(3.6 * opp_obj['sale_agreed_percent'], 1)
+            opp_obj['idle_stage_one_amount_bar_percent_render'] = round((idle_stage_one_amount / sale_agreed_amount * 100) * 0.8) 
+            opp_obj['idle_stage_two_amount_bar_percent_render'] = round((idle_stage_two_amount / sale_agreed_amount * 100) * 0.8)
+            opp_obj['idle_stage_three_amount_bar_percent_render'] = round((idle_stage_three_amount / sale_agreed_amount * 100) * 0.8)
+        if contracts_exchanged_amount > 0:
+            opp_obj['contracts_exchanged_amount'] = contracts_exchanged_amount
+            opp_obj['contracts_exchanged_percent'] = round(contracts_exchanged_amount / total_amount * 100, 1)
+            opp_obj['contracts_exchanged_donut_degree_render'] = round(3.6 * opp_obj['contracts_exchanged_percent'], 1)
+        if sold_amount > 0:
+            opp_obj['sold_amount'] = sold_amount
+            opp_obj['sold_percent'] = round(sold_amount / total_amount * 100, 1)
+            opp_obj['sold_donut_degree_render'] = round(3.6 * opp_obj['sold_percent'], 1)
+    return opp_obj
 
-
+def create_audit_record(opportunity, details, user, type):
+    try:
+        record = ChangeAudit(details=details, opportunity = opportunity, made_by=user, change_type = ChangeType.objects.get(name=type))
+        record.save()
+    except Exception as e:
+        print(f'Error at create_audit_record: {e}')

@@ -5,6 +5,7 @@ $(document).ready(() => {
     initSubStageListeners();
     initNoteListeners();
     initDocListeners();
+    initAuditListeners();
 });
 
 
@@ -129,7 +130,7 @@ function processSubStageUpdate(element, elementType) {
             if(!selectedVal) {
                 //Display the N/A select options again
                 updateCompletionCount(inputName, 'decrement', element.id)
-                selectEl = createSelectInputElement(parentElement, element, element.id, inputName);
+                const selectEl = createSelectInputElement(parentElement, element, element.id, inputName);
                 //Remove the input element from the DOM to avoid duplicate element ID
                 element.remove();
                 parentElement.appendChild(selectEl);
@@ -705,7 +706,12 @@ function deleteDocument(documentId, element) {
             console.log('Error at processNoteSave(): ' + e);
         },
     });
+}
 
+function initAuditListeners() {
+    $('#viewAuditBtn').on('click', () => {
+        $('#auditModal').modal('show');
+    })
 }
 
 

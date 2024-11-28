@@ -18,8 +18,12 @@ class Country(models.Model):
 
 class Development(models.Model):
     name = models.CharField(max_length=255)
-    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='client')
-    agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, related_name='agent')
+    formatted_url_name = models.CharField(max_length=255)
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, blank = True, related_name='client')
+    agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True, blank = True, related_name='agent')
+
+    def __str__(self):
+        return self.name
 
 class Property(models.Model):
     name = models.CharField(max_length=255)
@@ -60,7 +64,6 @@ class Document(models.Model):
     name = models.CharField(max_length = 400)
     size = models.IntegerField(null=True)
     opportunity = models.ForeignKey('Opportunity', on_delete = models.SET_NULL, null = True)
-
 
     class Meta:
         abstract = True
@@ -160,7 +163,25 @@ class Opportunity(models.Model):
     
     def __str__(self):
         return self.property.name
+    
+class ChangeType(models.Model):
+    name = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.name
+
+class ChangeAudit(models.Model):
+    details = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    opportunity = models.ForeignKey(Opportunity, on_delete=models.CASCADE)
+    made_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE)
+    change_type = models.ForeignKey(ChangeType, on_delete=models.CASCADE)
+
+    def get_created_date(self):
+        return self.timestamp.strftime('%d/%m/%Y')
+
+    def __str__(self):
+        return self.opportunity.property.name
 
      
 

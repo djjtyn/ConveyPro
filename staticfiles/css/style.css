@@ -241,9 +241,21 @@
 }
 
 #existingNotes form {
+    position: relative;
     border: .1em solid black;
-    margin: .1em 0;
+    margin: .4em 0;
     padding: .4em;
+    background-color: yellow;
+}
+
+#existingNotes form:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-width: 0 16px 16px 0;
+    border-style: solid;
+    border-color: #658E15 #fff;
 }
 
 #existingNotes form input {
@@ -256,4 +268,9 @@
 
 #existingNotes form input .editNoteBtn {
     margin-left: 80%;
+}
+
+#docWrap, 
+#docWrap #displayFilesForUpload {
+    display: none;
 }
