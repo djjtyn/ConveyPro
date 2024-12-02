@@ -5,6 +5,12 @@
     background-color: green;
 }
 
+#developmentSelector {
+    border-radius: 8px;
+    padding: 0 .2em;
+    height: 100%;
+} 
+
 /*Auth Styling*/
 /*Login Page */
 #authFormWrap {
@@ -274,3 +280,24 @@
 #docWrap #displayFilesForUpload {
     display: none;
 }
+
+/*OVERVIEW PAGE*/
+.topWrap {
+    background-color: #e6e6e6;
+    margin-bottom: 1em;
+}
+
+.topWrap h1 {
+    text-align: center;
+}
+
+.propertyStageCount {
+    padding: 2em
+}
+
+#largeDonutGraph {
+    width: 100%;
+    padding: 2em 0 1em 0;
+    margin: auto;
+}
+

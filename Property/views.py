@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import redirect, render
 from .functions import update_stage, update_sub_stage, process_note, upload_files, delete_document, get_overview_data
-from .models import Opportunity, Note, LocalDocument, HostedDocument, ChangeAudit
+from .models import Development, Opportunity, Note, LocalDocument, HostedDocument, ChangeAudit
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 import os
@@ -51,11 +51,11 @@ def view_opportunity(request,development, id):
             #Document Upload
             if 'files' in request.FILES:
                 files = request.FILES.getlist('files')
-                return upload_files(opportunity, files)
+                return upload_files(logged_in_user, opportunity, files)
             request_data = json.loads(request.body)
             action = request_data.get('action')
             if action == 'deleteDocument':
-                return delete_document(request_data.get('docId'))
+                return delete_document(logged_in_user, opportunity, request_data.get('docId'))
             if action == 'stageUpdate':
                 return update_stage(logged_in_user, opportunity, request_data.get('stage'))
             if action == 'subStageUpdate':
@@ -69,16 +69,22 @@ def view_opportunity(request,development, id):
 def view_overview(request, development):
     try:
         if development and development != 'all':
-            pass
+             opportunities = Opportunity.objects.select_related('stage').filter(property__development__formatted_url_name=development)
         # All opportunities can be retrieved 
         else: 
             opportunities = Opportunity.objects.select_related('stage').all()
         total_amount= len(opportunities)
+        if development == 'all':
+            development_label = 'All Developments'
+        else:
+            developmentObj = Development.objects.get(formatted_url_name = development)
+            development_label = developmentObj.name
         #Init a dict containing compounded opportunity data
         overviewObj = get_overview_data(opportunities, total_amount)
         return render(request, 'overview.html', {
             'overviewObj': overviewObj,
-            'development': development
+            'development': development,
+            'developmentLabel': development_label
             }
         )
     except Exception as e:

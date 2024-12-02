@@ -203,7 +203,9 @@ def delete_document(logged_in_user, opportunity, document_id):
         return JsonResponse ({'message': status}, status = 500)
     
 def get_overview_data(opportunities, total_amount):
-    opp_obj = {}
+    opp_obj = {
+        'total_amount': total_amount
+    }
     if opportunities:
         for_sale_amount = 0
         sale_agreed_amount = 0
@@ -227,26 +229,14 @@ def get_overview_data(opportunities, total_amount):
                 contracts_exchanged_amount +=1
             if opp.stage.stage == "Sold":
                 sold_amount +=1   
-        # Create an object but only include keys which have values > 0
-        if for_sale_amount > 0:
-            opp_obj['for_sale_amount'] = for_sale_amount
-            opp_obj['for_sale_percent'] = round(for_sale_amount / total_amount * 100, 1)
-            opp_obj['for_sale_donut_degree_render'] = round(3.6 * opp_obj['for_sale_percent'], 1)
+        opp_obj['for_sale_amount'] = for_sale_amount
+        opp_obj['sale_agreed_amount'] = sale_agreed_amount
+        opp_obj['contracts_exchanged_amount'] = contracts_exchanged_amount
+        opp_obj['sold_amount'] = sold_amount
         if sale_agreed_amount > 0:
-            opp_obj['sale_agreed_amount'] = sale_agreed_amount
-            opp_obj['sale_agreed_percent'] = round(sale_agreed_amount / total_amount * 100, 1)
-            opp_obj['sale_agreed_donut_degree_render'] = round(3.6 * opp_obj['sale_agreed_percent'], 1)
             opp_obj['idle_stage_one_amount_bar_percent_render'] = round((idle_stage_one_amount / sale_agreed_amount * 100) * 0.8) 
             opp_obj['idle_stage_two_amount_bar_percent_render'] = round((idle_stage_two_amount / sale_agreed_amount * 100) * 0.8)
             opp_obj['idle_stage_three_amount_bar_percent_render'] = round((idle_stage_three_amount / sale_agreed_amount * 100) * 0.8)
-        if contracts_exchanged_amount > 0:
-            opp_obj['contracts_exchanged_amount'] = contracts_exchanged_amount
-            opp_obj['contracts_exchanged_percent'] = round(contracts_exchanged_amount / total_amount * 100, 1)
-            opp_obj['contracts_exchanged_donut_degree_render'] = round(3.6 * opp_obj['contracts_exchanged_percent'], 1)
-        if sold_amount > 0:
-            opp_obj['sold_amount'] = sold_amount
-            opp_obj['sold_percent'] = round(sold_amount / total_amount * 100, 1)
-            opp_obj['sold_donut_degree_render'] = round(3.6 * opp_obj['sold_percent'], 1)
     return opp_obj
 
 def create_audit_record(opportunity, details, user, type):
