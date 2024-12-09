@@ -6,8 +6,10 @@ $(document).ready(() => {
 function initDonutCharts() {
     const amountPerStageTrackerObj = createAmountsPerStageObj()
     const totalAmount = Number($('#opportunityCount').text());
-    renderSmallDonuts(totalAmount);
-    $('#largeDonutGraph').append(renderLargeDonut(amountPerStageTrackerObj));
+    if(totalAmount > 0) {
+        renderSmallDonuts(totalAmount);
+        $('#largeDonutGraph').append(renderLargeDonut(totalAmount,amountPerStageTrackerObj));
+    }
 }
 
 function createAmountsPerStageObj() {
@@ -62,8 +64,8 @@ function renderSmallDonuts(totalAmount){
     })
 }
 
-function renderLargeDonut(amountPerStageTracker) {
-    const data = createStageObjItemArray(amountPerStageTracker)
+function renderLargeDonut(totalAmount, amountPerStageTracker) {
+    const data = createStageObjItemArray(totalAmount,amountPerStageTracker)
     const width = $('#largeDonutGraph').width();
     const height = width/2;
 
@@ -81,7 +83,7 @@ function renderLargeDonut(amountPerStageTracker) {
       .innerRadius(0)
       .outerRadius(Math.min(width, height) / 2 - 1);
 
-  const labelRadius = arc.outerRadius()() * 0.8;
+  const labelRadius = arc.outerRadius()() * 0.7;
 
   // A separate arc generator for labels.
   const arcLabel = d3.arc()
@@ -124,20 +126,22 @@ function renderLargeDonut(amountPerStageTracker) {
           .attr("x", 0)
           .attr("y", "0.7em")
           .attr("fill-opacity", 0.7)
-          .text(d => d.data.value.toLocaleString("en-US")));
+          .text(d => `${d.data.value}%`));
 
   return svg.node();
 }
 
-function createStageObjItemArray(amountPerStageTracker){
-//Create an object for each item in amountPerStageTracker and append it to data array
+function createStageObjItemArray(totalAmount, amountPerStageTracker){
+    //Create an object for each item in amountPerStageTracker and append it to data array
     const data = [];
     Object.keys(amountPerStageTracker).forEach(key => {
         const value = amountPerStageTracker[key];
+        console.log(`${value} ${key} records`)
+        const percentage = Math.round((value/totalAmount) * 100);
         if(value > 0) {
             const obj = {
                 'label': key,
-                'value': amountPerStageTracker[key]
+                'value': percentage
             }
             data.push(obj)
         }

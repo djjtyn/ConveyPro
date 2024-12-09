@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block page_title %}Listed Properties{% endblock %}
+{% block content %}
+<div id="overviewWrap">
+    <div class="topWrap">
+        <h1>{{developmentLabel}}</h1>
+        <div class="row">
+            <div class="col-sm-12 col-md-3">
+                <div class="propertyStageCount">
+                    <u><h2><span id="opportunityCount">{{overviewObj.total_amount}}</span> Listings</h2></u>
+                    <h3>
+                        <span id='forSaleStageCount'>{{overviewObj.for_sale_amount}}</span><span class='stageName'> For Sale</span>
+                    </h3>
+                    <h3>
+                        <span id='saleAgreedstageCount'>{{overviewObj.sale_agreed_amount}}</span><span class='stageName'> Sale Agreed</span>
+                    </h3>
+                    <h3>
+                        <span id='contractsExchangedStageCount'>{{overviewObj.contracts_exchanged_amount}}</span><span class='stageName'> Contracts Exchanged</span>
+                    </h3>
+                    <h3>
+                        <span id='soldStageCount'>{{overviewObj.sold_amount}}</span><span class='stageName'> Sold</span> 
+                    </h3>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-9">
+                <div id="largeDonutGraph"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-3 smallDonutWrap">
+            <canvas id="forSaleDonut"></canvas>
+        </div>
+        <div class="col-sm-12 col-md-3 smallDonutWrap">
+            <canvas id="saleAgreedDonut"></canvas>
+        </div>
+        <div class="col-sm-12 col-md-3 smallDonutWrap">
+            <canvas id="contractsExchangedDonut"></canvas>
+        </div>
+        <div class="col-sm-12 col-md-3 smallDonutWrap">
+            <canvas id="soldDonut"></canvas>
+        </div>
+    </div>
+</div>   
+{% endblock %}
+{% block pageScript %}
+<!--d3.js and chart.js cdn to render charts-->
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../../static/js/overview.js"></script>
+{% endblock %}
