@@ -1,0 +1,303 @@
+/*Generic Styling*/
+#pageMessages {
+    color: white;
+    text-align: center;
+    background-color: green;
+}
+
+#developmentSelector {
+    border-radius: 8px;
+    padding: 0 .2em;
+    height: 100%;
+} 
+
+/*Auth Styling*/
+/*Login Page */
+#authFormWrap {
+    width: 70%;
+    margin: 3rem auto 0 auto;
+    padding: .2rem;
+}
+
+#authFormWrap .formIcon {
+    font-size: 4rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.authFormError {
+    color: red;
+    display: block;
+}
+
+
+/* Multi Opportunity Page*/
+.multiOppWrap {
+    width: 80%;
+    padding: 1rem;
+    margin: auto;
+}
+
+.multiOppWrap .filters {
+    width: 50%;
+    padding: 1em 0;
+}
+
+.multiOppWrap .oppList {
+    padding: .5em;
+}
+
+.multiOppWrap .oppListHeader {
+    background-color: #F4F5F6;
+    color:#65696e;
+    font-weight: 500;
+    padding: .2em;
+}
+
+.multiOppWrap .oppListItem {
+    border-top: .3em solid #F4F5F6;
+    padding: .8em;
+    color: white;
+    transition: ease-in-out;
+}
+
+.multiOppWrap:hover {
+    cursor: pointer;
+}
+
+.multiOppWrap .ForSale {
+    background-color: orange;
+}
+
+.multiOppWrap .ForSale:hover {
+    background-color: white;
+    color: orange;
+    border: .1em solid orange;
+}
+
+.multiOppWrap .Sold {
+    background-color: limegreen;
+}
+
+.multiOppWrap .Sold:hover {
+    background-color: white;
+    color: limegreen;
+    border: .1em solid limegreen;
+}
+
+.multiOppWrap .SaleAgreed {
+    background-color: #A654F0;
+}
+
+.multiOppWrap .SaleAgreed:hover {
+    background-color: white;
+    color: #A654F0;
+    border: .1em solid #A654F0;
+}
+
+.multiOppWrap .ContractsExchanged {
+    background-color: #FF4AA0;
+} 
+
+.multiOppWrap .ContractsExchanged:hover {
+    background-color: white;
+    color: #FF4AA0;
+    border: .1em solid #FF4AA0;
+}
+
+/* Single Opportunity Page*/
+.oppWrap {
+    width: 96%;
+    margin: auto;
+}
+
+.oppWrap .backIcon i {
+    font-size: 1.5em;
+    padding: 1em 0;
+}
+
+.oppWrap .propertyName {
+    font-size: 2em;
+}
+
+.oppWrap .stageBtn {
+    height: 3em;
+    width: 100%;
+    border: .1em solid black;
+}
+
+.oppWrap .ForSaleBtn {
+    transition: ease-in-out;
+    background-color: orange;
+    color: white;
+}
+
+.oppWrap .ForSaleBtn:hover,
+.oppWrap .ForSaleBtn:focus {
+    background-color: white;
+    color: black;
+    cursor: pointer;
+}
+
+.oppWrap .SaleAgreedBtn {
+    transition: ease-in-out;
+    background-color: #A654F0;
+    color: white;
+}
+
+.oppWrap .SaleAgreedBtn:hover,
+.oppWrap .SaleAgreedBtn:focus {
+    background-color: white;
+    color: #A654F0;
+    cursor: pointer;
+}
+
+.oppWrap .ContractsExchangedBtn {
+    transition: ease-in-out;
+    background-color: #FF4AA0;
+    color: white;
+}
+
+.oppWrap .ContractsExchangedBtn:hover,
+.oppWrap .ContractsExchangedBtn:focus {
+    background-color: white;
+    color: #FF4AA0;
+    cursor: pointer;
+}
+
+.oppWrap .SoldBtn {
+    transition: ease-in-out;
+    background-color: limegreen;
+    color: white;
+}
+
+.oppWrap .SoldBtn:hover,
+.oppWrap .SoldBtn:focus {
+    background-color: white;
+    color: limegreen;
+    cursor: pointer;
+}
+
+.oppWrap .saveStageWrap {
+    text-align: center;
+    padding: 1em;
+}
+.oppWrap .noteDocBtnWrap {
+    display: contents;
+    border: .1em solid black;
+    border-radius: 8%;
+}
+
+.oppWrap .noteDocBtnWrap button {
+    height: 3em;
+    width: 100%;
+    background-color: white;
+}
+
+.oppWrap .timelineStep .substageField select,
+.oppWrap .timelineStep .substageField input {
+    width:100%;
+}
+
+.oppWrap .subStageWrap, 
+.oppWrap .noteDocWrap {
+    margin: 1em 0;
+}
+
+.oppWrap .subStageWrapItem {
+    padding: .3em;
+    border: .1em solid black;
+    border-radius: 8px;
+}
+
+.oppWrap #saleAgreedSubStageWrap {
+    background-color:#A654F0;;
+}
+
+.oppWrap #contractsExchangedSubStageWrap {
+    background-color:#FF4AA0
+}
+
+.oppWrap .timeLineIcon {
+    font-size: 1.5em;
+    height: 100%;
+    text-align: center;
+    align-content: center;
+    color: green;
+}
+
+/*Note/Doc Area*/
+#noteEntryForm {
+    display: none;
+}
+
+#noteEntryForm input,
+#noteEntryForm textarea{
+    margin: .1em;
+    border: .1em solid black;
+}
+
+#noteEntryForm .missingNoteData {
+    background-color: red;
+    color: white;
+}
+
+#noteEntryForm .missingNoteData::placeholder{
+    color: white;
+}
+
+#existingNotes form {
+    position: relative;
+    border: .1em solid black;
+    margin: .4em 0;
+    padding: .4em;
+    background-color: yellow;
+}
+
+#existingNotes form:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-width: 0 16px 16px 0;
+    border-style: solid;
+    border-color: #658E15 #fff;
+}
+
+#existingNotes form input {
+    border-bottom: .1em solid black;
+}
+
+#existingNotes form input .deleteNoteBtn {
+    margin-right: 80%;
+}
+
+#existingNotes form input .editNoteBtn {
+    margin-left: 80%;
+}
+
+#docWrap, 
+#docWrap #displayFilesForUpload {
+    display: none;
+}
+
+/*OVERVIEW PAGE*/
+.topWrap {
+    background-color: #e6e6e6;
+    margin-bottom: 1em;
+}
+
+.topWrap h1 {
+    text-align: center;
+}
+
+.propertyStageCount {
+    padding: 2em
+}
+
+#largeDonutGraph {
+    width: 100%;
+    padding: 2em 0 1em 0;
+    margin: auto;
+}
+
