@@ -1,9 +1,10 @@
 from datetime import datetime
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from .models import Stage, Note, LocalDocument, ChangeAudit, ChangeType
+from .models import HostedDocument, Stage, Note, LocalDocument, ChangeAudit, ChangeType
 from Auth.models import CustomUser
 from django.utils import timezone
+from azure.storage.blob import BlobServiceClient
 import os
 
 def update_stage(logged_in_user, opportunity, stage_name):
@@ -162,17 +163,31 @@ def upload_files(logged_in_user, opportunity, files):
     try:
         if os.environ['CLOUD_STORAGE'] == 'False':
             use_local_storage = True
+        else:
+            #Init BlobServiceClient to interact with Azure storage
+            blob_client = BlobServiceClient.from_connection_string(os.environ['AZURE_STORAGE_CONN_STRING'])
+            #Format the property development name so it can be used to create/identify blob container
+            formatted_development = opportunity.property.get_development().lower().replace(' ', '')
+            blob_container_client = get_blob_container(blob_client, formatted_development)
+            blob_storage_root = os.environ['BLOB_STORAGE_ROOT']
+            opportunity_id = opportunity.id
         file_counter = 0
         file_tracker = []
         for file in files:
             if use_local_storage:
+                #Create LocalDocument Record
                 stored_file = LocalDocument(name = file.name, size = file.size, opportunity=opportunity, file = file)
+            else:
+                # Upload file to Azure Blob storage and return its url
+                upload_url = upload_blob_to_azure(blob_client, blob_container_client, file.name, opportunity_id, formatted_development, file, blob_storage_root)
+                #Create HostedDocument Record
+                stored_file = HostedDocument(name = file.name, size = file.size, opportunity=opportunity, document_url = upload_url)
             stored_file.save()
             file_obj = {
                 'id': stored_file.id,
                 'name': stored_file.name,
-                'url': stored_file.file.url
             }
+            file_obj['url'] = stored_file.file.url if use_local_storage else upload_url
             file_tracker.append(file_obj)
             file_counter+=1
         status = f'{file_counter} Files Uploaded' if file_counter > 1 else 'File Uploaded'
@@ -185,7 +200,49 @@ def upload_files(logged_in_user, opportunity, files):
     except Exception as e:
         print(f'Error at create note: {e}')
         return JsonResponse ({'message': status}, status = 500)
-    
+
+def get_blob_container(blob_client, formatted_development):
+    # Retrieve blob container which matches formatted development name. Create new container if none found
+    container = blob_client.get_container_client(formatted_development)
+    if not container.exists():
+        container = blob_client.create_container(name=formatted_development)
+    return container
+
+def upload_blob_to_azure(blob_client, blob_container_client, file_name, opportunity_id, formatted_development, file, blob_storage_root):
+    try:
+        # Format uploaded file name to prevent any duplicate file names in blob container
+        valid_file_name = generate_valid_upload_file_name(blob_client, file_name, opportunity_id, formatted_development)
+        blob_container_client.upload_blob(name = valid_file_name, data = file)
+        return f'{blob_storage_root}/{formatted_development}/{valid_file_name}'
+    except Exception as e:
+        print(f'Error at upload_blob_to_azure: {e}')
+
+def generate_valid_upload_file_name(blob_client, file_name, opportunity_id, formatted_development):
+    try:
+        # Isolate both the file name and its type
+        file_components = file_name.split('.')
+        file_name = file_components[0]
+        file_ext = file_components[1]
+        #If a identical file name already exists in the storage container increment number after file name to avoid duplicate fiel names 
+        file_index = 0
+        #Start with assumption the file name already exists in container
+        preexisting_filename = True
+        while preexisting_filename:
+            # file index only needs to be considered if a new file name needs to be generated
+            if file_index > 0:
+                file_identifier = f'Opp{opportunity_id}-{file_name}({file_index}).{file_ext}'
+            else:
+                file_identifier = f'Opp{opportunity_id}-{file_name}.{file_ext}'
+            blob_file_reference = blob_client.get_blob_client(container = formatted_development, blob = file_identifier)
+            #If filename already exists in container increment number at end of name, otherwise break out of loop
+            if blob_file_reference.exists():
+                file_index+=1
+            else:
+                preexisting_filename = False
+        return file_identifier 
+    except Exception as e:
+        print(f'Error creating valid file name for Azure file upload: {e}')
+
 def delete_document(logged_in_user, opportunity, document_id):
     status = 'Error deleting document'
     try:
@@ -194,6 +251,16 @@ def delete_document(logged_in_user, opportunity, document_id):
         if use_local_storage:
             document = LocalDocument.objects.get(pk=document_id)
             document.delete_file()
+        else:
+            document = HostedDocument.objects.get(pk=document_id)
+            # Remove file from Azure Blob Storage
+            blob_storage_client = BlobServiceClient.from_connection_string(os.environ['AZURE_STORAGE_CONN_STRING'])
+            #Actual document name may differ from local DB reference so needs to be retrieved from blob location url 
+            blob_name = document.document_url.split('/')[-1]
+            #Format the property development name so it can be used to identify relevant blob container
+            formatted_development = opportunity.property.get_development().lower().replace(' ', '')
+            blob_client = blob_storage_client.get_blob_client(container=formatted_development, blob = blob_name)
+            blob_client.delete_blob()
         document.delete()
         status = 'Document Deleted'
         create_audit_record(opportunity, status, logged_in_user, 'Document')
